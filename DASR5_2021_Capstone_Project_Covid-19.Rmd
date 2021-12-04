@@ -39,16 +39,16 @@ code { color: rgb(205,79,57) }
 ## Introduction
 
 Coronavirus disease(COVID19) is an infectious disease caused by a newly discovered coronavirus.
-It has spread to numerous countries across all continent since the first discovery in Wuhan, CHina
+It has spread to numerous countries across all continent since the first discovery in Wuhan, China
 back in Nov 2019 and was declared as pandemic by WHO on March 11.
 
 Various countries has came out measure/restrictions to respond to COVID-19.
 Since "circuit breaker", a partial nationwide lockdown, where only essential services could allow opened,
-SG residents has started to feel a great impact on daily life
+SG residents have started to feel a great impact on daily life
 where they are encouraged to stay home as much as possible and wearing of mask became mandatory when going out.
 SG government has constantly revising policy and social restrictions.
 Three phases of planned reopening were announced on 19 May
-namely "Safe Reopening" (Phase1) "Safer Transition" (Phase2), and finally "Safe Nation" (Phase3)
+namely "Safe Reopening" (Phase1) "Safer Transition" (Phase2), and finally "Safe Nation" (Phase3).
 
 ## Problem Statement
 
@@ -71,9 +71,7 @@ pacman::p_load(tidyverse, broom, modelr, lubridate,
                jtools, huxtable, gridExtra,
                psych, Hmisc, car, sandwich, 
                ggthemes, scales, ggstance, 
-               gvlma, ggfortify,
-               gtrendsR, rtweet,
-               rvest, glue, reprex)
+               gvlma, gtrendsR, rtweet, glue)
 
 my_colors <- c("#05A4C0", "#85CEDA", "#D2A7D8", "#A67BC5", "#BB1C8B", "#8D266E", "gold4", "darkred", "deepskyblue4")
 
@@ -187,6 +185,7 @@ We also identified 2 key events over the period to analyse further to answer our
 
 * PM Lee's address on COVID-19 situation
 * Announcement on the extension of the Stabilisation Phase for four weeks, through to 21 November 2021.
+* Unvaccinated people can no longer eat at hawker centres, enter shopping malls.
 
 **2021-11-08**
 
@@ -249,11 +248,11 @@ tweets_cleaned <- tidy_tweets_token %>%
 
 # Manual cleaning, filtering out unwanted words
 tweets_token_cleaned <- tweets_cleaned %>%
-  filter(!word %in% c("singapore", "covid", "covid19","positive","negative") & !str_detect(word,"^#|^@") & !str_detect(word, "^[:digit:]+$"))
+  filter(!word %in% c("singapore", "covid", "covid19","positive","negative","oct","nov","news","amp","reuters","news","daily","malaysia","november","october","october","press","journal","amid","weekly","days","weeks","china","chinese","report","am","pm","dont","taking","found","morning","bloomberg","months","month","india","media","week","read","reports","data","europe","monday","tuesday","wednesday","thursday","friday","satursday","sunday","wall","street") & !str_detect(word,"^#|^@") & !str_detect(word, "^[:digit:]+$"))
 
 ```
 
-## Visualisation for Exploratory Data Analysis
+## Visualisation for Basic Exploratory Data Analysis
 ### A Simple Word Cloud
 ```{r, fig.height = 6, fig.width = 8, fig.align='center'}
 
@@ -453,7 +452,9 @@ char_sentiment %>%
   radarchart::chartJSRadar(showToolTipLabel = T, main="Any Effects on the Emotion Class Percentage After Address? - No", maxScale=25, responsive=T,addDots = T, colMatrix = grDevices::col2rgb(my_colors[c(2,4)]),lineAlpha = 0.7, polyAlpha =0.2)
 ```
 
-Simple Linear Regression on average sentiment over time period
+### Simple Linear Regression
+
+OLS Linear Regression on average sentiment over time period
 
 ```{r, fig.height = 6, fig.width = 9, message=FALSE}
 merged_dataset <- SSA1 %>% 
@@ -478,6 +479,7 @@ merged_dataset %>%
   theme(axis.title.y = element_text(), legend.position = "bottom") +
   labs(title="OLS Simple Regression Model")
 ```
+### Regression Discontinuity Analysis
 
 We perform **Regression Discontinuity Analysis** on the effects of PM address event.
 
@@ -811,9 +813,9 @@ The following figure represents the three lines that represent differing educati
 
 From our data science project, we could find the following two findings:
 
-1.	The relationships between the tendency of people to compare themselves to others’ abilities and life satisfaction differ depending on one’s gender. Specifically, there appears to be no relationship between social comparisons orientation and life satisfaction among males. On the other hand, among females, the more they compare their abilities with others, there seems to be lesser life satisfaction. Thus, social comparison seems to be harmful for life satisfaction among females, whereas there seems to be no relationships between social comparisons and life satisfaction among males. (You might want to highlight that the relationships between social comparisons orientation and life satisfaction is based on observational study, leading to correlations, not causations, in `Limitations and Future Directions` section below).
+1.	The first case of COVID-19 found in Singapore was confirmed on 23 January 2020, and since nationwide partial lockdown or circuit breaker kicked in from 7 April 2020 to 1 June 2020, Singapore have been experiencing policies change from time to time to effectively cope with the surges. As new norm has been rooted in local lifestyle, no apparent jump or trend has been observed in public sentiment.  In fact, we further analyse the effects from the most recent key announcements, a sudden increase of number of tweets and jump in overall sentiment appears that there is a causation effect, but it did not drive any specific emotion class to form trending. Despite that social curb extension announced expected to cause negative sentiment, PM address has outweighed the effects on it and sentiment emerge with more trusts to the leadership. Thus, information delivering, create awareness and generate leads seems to be effective in producing positive public sentiment.
 
-2.	The relationships between social comparison and life satisfaction also depends on one’s education level. It appears that, among those who received average and high levels of education, the greater the social comparison tendency, the lower the life satisfaction. Such a negative relationship between social comparison and life satisfaction was not found among those with relatively lower levels of education. Social comparison regarding one’s abilities can hurt one’s life satisfaction, when one receives average and above-average levels of education (again, acknowledge that the findings are correlational though, thus further investigation with a/b testing should follow).
+2.	
 
 ## Implications
 
@@ -821,22 +823,46 @@ From our data science project, we could find the following two findings:
 
 ## Limitations and Future Directions
 
-> Prof. Roh's Note: "Acknowledging limitations is not where you just provide a laundry list of what is missing and what should have done. Please take the responsibility of your analyses and inform your readers to understand what the results tell and don’t (or can’t) tell. More importantly, this is the section where you technically begin your next data science project, by highlighting what would be informative down the line to shed further light on what you have found here."
+The public sentiment reflected and analysed by tweets data especially effective among younger age group who spend most of their time in social media and carefully tweets what is in their mind. This can serve only a small sample of a whole local population. If possible, we also need to filter out news publisher tweets and focus on individual tweets. In here, We are comparing sentiment change within group based on causal inference driven by nation-wide speech and announcements. On how COVID-19 has changed the sentiment in the society, we have to identify and aware of timeline on key events happened and also view from a longer term from pre-covid and covid era, hence a relative longer time period of data will provide more insights for analysing the differences.  We are hold back by the free Twitter developer account which eligible to extract tweets up to 7 days in the past. 
 
-To answer the question timeseries data for a relatively long time period is needed 
-which means a very high number of tweets. If you have only a free Twitter developer account, 
-the number of tweets you can get is limited. Therefore, another data source is needed.
+Local slang words or Singlish are casually and frequently used among local community and most of them could be a good gauge of emotion, E.g. even a dialect vulgar should reflect anger, thus enriching the emotion dictionary like NRC can better tune to understand the positive and negative in sentiment.
 
-We can enriched with localised slang words for NRC dictionary to better tune the positive or negative sentiment.
-
+Feature Importance describe which features are relevant and is another aspect we should explore to help us better understanding of solved problem and sometimes lead to model improvements for accuracy by employing feature selection.
 
 ## References
 
-> References
+[1] Julia Silge & David Robinson
+**Text Mining with R** - *A TIDY APPROACH*
+O'Reilly (2017)
+
+[2] Andrea Cirillo
+**R Data Mining** - *Implement data mining techniques through practical use cases and real-world datasets*
+Packt> (2017)
+
+[3] Tony Carilli
+**R Companion to Real Econometrics**
+February 2021
+https://bookdown.org/carillitony/bailey/chp11.html
+
+[4] Ashwin Malshe(2019-06-25)
+**Data Analytics Applications**
+https://ashgreat.github.io/analyticsAppBook/collect-tweets.html
+
+
 
 ## Appendix
 
-> Appendix
+Custom Stop-words for Text Pre-processing in Word Cloud data overview
+"singapore", "covid", "covid19","positive","negative","oct","nov","news","amp","reuters","news","daily",
+"malaysia","november","october","october","press","journal","amid","weekly","days","weeks","china",
+"chinese","report","am","pm","dont","taking","found","morning","bloomberg","months","month","india",
+"media","week","read","reports","data","europe","monday","tuesday","wednesday","thursday","friday",
+"satursday","sunday","wall","street"
+
+The objective is to clean those are less relevant and very little meaning to find sentiment, such as **punctuation**, **special character**, **prefix with number, hashtag, alias**, **links** and **custom terms above**.
+
+We removed duplicated text in tweets, sent from the same screen name multiple times. For instance, there are several news publishers have posted the same tweet on different days.
+
 
 ## `sessionInfo()`
 
