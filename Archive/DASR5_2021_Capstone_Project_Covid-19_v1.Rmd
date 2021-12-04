@@ -1,0 +1,887 @@
+---
+title: "SG Covid-19 Sentiment Analysis"
+author: "Alex Ong <br>Lee Yun Xun"
+date: "27th Nov 2021"
+output:
+  html_document:
+    prettydoc::html_pretty:
+      theme: architect
+    highlight: espresso
+    # css: styles.css
+    # latex_engine: xelatex
+    # mainfont: Calibri Light
+    toc: yes
+    toc_float: 
+      collapsed: false
+      smooth_scroll: false
+    number_sections: false
+---
+
+```{r setup, include = F}
+knitr::opts_chunk$set(echo = T)
+options(warn=-1)
+```
+
+```{css, echo = F}
+h1 { color: rgb(62, 6, 148); }
+h2 { color: rgb(0, 104, 139); } 
+h3 { color: rgb(51, 122, 183); }
+
+body {font-family:  -apple-system, BlinkMacSystemFont, 
+                    "Segoe UI", Roboto, Ubuntu;
+      font-size: 12pt; }
+
+code { color: rgb(205,79,57) }
+
+.tocify-extend-page {height: 0 !important; }
+```
+
+## Introduction
+
+Coronavirus disease(COVID19) is an infectious disease caused by a newly discovered coronavirus.
+It has spread to numerous countries across all continent since the first discovery in Wuhan, China
+back in Nov 2019 and was declared as pandemic by WHO on March 11.
+
+Various countries has came out measure/restrictions to respond to COVID-19.
+Since "circuit breaker", a partial nationwide lockdown, where only essential services could allow opened,
+Singapore(SG) residents have started to feel a great impact on daily life
+where they are encouraged to stay home as much as possible and wearing of mask became mandatory when going out.
+SG government has constantly revising policies and social restrictions.
+Three phases of planned reopening were announced on 19 May
+namely "Safe Reopening" (Phase1) "Safer Transition" (Phase2), and finally "Safe Nation" (Phase3).
+
+## Problem Statement
+
+Microblogging has become one of the most useful tools for sharing everyday life events and news and for expressing opinions about those events. As Twitter posts are short and constantly being generated, they are a great source for providing public sentiment towards events that occurred throughout the COVID-19 period in Singapore. 
+
+In our Capstone Project, we perform exploratory data analysis about SG COVID situation and sentiment analysis and modeling on the tweets about COVID19 to seek to answer the following research questions:
+
+1. What are the main prevalent sentiment and emotions expressed in words in Singapore tweets
+about current COVID situation?
+
+2. Is there any change of sentiment over a period of time amidst global reopening with higher vaccination rate, in contrast growing new daily cases/death locally?
+
+For our data science project, we activated the following packages, using the `Tidyverse` approach.
+
+```{r}
+# Load necessary packages
+pacman::p_load(tidyverse, broom, modelr, lubridate, 
+               tidytext, wordcloud2, wordcloud, reshape2,
+               textdata,   # Employing Lexicon
+               jtools, huxtable, gridExtra,
+               psych, Hmisc, car, sandwich, 
+               ggthemes, scales, ggstance, 
+               gvlma, gtrendsR, rtweet, glue, ggplot2, quantmod,gifski,
+               caret, DT, dplyr)
+
+my_colors <- c("#05A4C0", "#85CEDA", "#D2A7D8", "#A67BC5", "#BB1C8B", "#8D266E", "gold4", "darkred", "deepskyblue4")
+
+my_theme <- theme(plot.background = element_rect(fill = "grey98", color = "grey20"),
+                  panel.background = element_rect(fill = "grey98"),
+                  panel.grid.major = element_line(colour = "grey87"),
+                  text = element_text(color = "grey20"),
+                  plot.title = element_text(size = 22),
+                  plot.subtitle = element_text(size = 17),
+                  axis.title = element_text(size = 15),
+                  axis.text = element_text(size = 15),
+                  legend.box.background = element_rect(color = "grey20", fill = "grey98", size = 0.1),
+                  legend.box.margin = margin(t = 3, r = 3, b = 3, l = 3),
+                  legend.title = element_blank(),
+                  legend.text = element_text(size = 15),
+                  strip.text = element_text(size=17))
+```
+
+## Import
+
+Then, we imported our dataset.
+
+> **Data Source 1: SG COVID DATA**
+
+```{r}
+SSA <- read.csv("Covid-19.csv")
+```
+
+The dataset contains time series data on covid-19 cases in Singapore on counts of confirmed, discharged, hospitalised, deaths, imported cases.
+
+Within the dataset, Some of few key fields we are interested in reflecting current Singapore COVID-19 situation, namely Daily.Confirmed, Daily Deaths, Still.Hospitalised and Intensive.Care.Unit..ICU which will also serve as our dependent (*discrete y*) variable.
+
+Notes:
+* All figures (excluding variables with names containing "MOH report") are as at press release within the day and are not back-dated to update any changes that the Ministry of Health (MOH) might have made. 
+
+* "Daily imported" and "Daily Local transmission" make up "Daily Confirmed".
+
+* Still Hospitalised" is computed based on "Total Confirmed" - "Cumulative Discharged" - "Discharged to Isolation" - "Cumulative Deaths" - "Tested positive demise" (summed). This might not tally with the sum of "General Wards MOH report" and "Intensive Care Unit (ICU)", indicating dirty data.
+
+* "Cumulative Vaccine Doses", "Cumulative Individuals Vaccinated", and "Cumulative Individuals Vaccination Completed" added from 1 Jul 2021. The data is tied to the date of the report but the count is as of the previous day. i.e. Figures indicated for 1 Jul 2021 reflect the total number of doses of COVID-19 vaccines as of Jun 30. "Cumulative Individuals Vaccinated" refers to the number of individuals who have received at least one dose of vaccine.
+
+
+```{r}
+glimpse(SSA)
+```
+
+> **Data Source 1: Tidy & Transform**
+
+The first thing we did with our loaded dataset was to remove the non-relevant columns and remain only those we will perform analysis and modeling. Also, we transformed the dataset into long format for data exploratory visualization.
+
+```{r, fig.height = 8, fig.width = 10}
+SSA1<- tibble(SSA)
+
+SSA1 <- SSA1[-(1:626) , -(18:37)]
+SSA1 <- SSA1[ , -(11:16)]  
+SSA1 <- SSA1[ , -(3:8)]
+SSA1 <- SSA1[-(35:373) , ]
+
+SSA1$Date <- as.Date(SSA1$Date)
+
+#This illustrate a comparison of the daily cases for Death, Confirmed, Hospitalised and ICU over the study period
+
+SSA_chart <- SSA1 %>% pivot_longer(cols = Daily.Confirmed:Intensive.Care.Unit..ICU. , 
+                                    names_to = "Cases", 
+                                    values_to = "Value")
+
+
+COLORS <- c(Daily.Confirmed = "#c381fd", Daily.Death ="#4815aa",  
+            Still.Hospitalised = "#f2626b" , Intensive.Care.Unit..ICU. = "#feba4f")
+
+ggplot(SSA_chart, aes(x = Date, y = Value, group = Cases, color = Cases)) +
+  geom_line(size = 0.9) +
+  scale_color_manual(values = COLORS)+
+  scale_y_continuous("Cases", limits = c(0,5500)) + 
+  labs(title="Comparison of Daily Cases\nfor Death, Confirmed, Hospitalised and ICU")+
+  theme(legend.title = element_text(color = "blue", size = 10)) +
+  my_theme + theme(axis.title.x = element_blank(),
+                   legend.position = "bottom") +
+  scale_x_date(date_breaks = "1 day") + 
+  ggthemes::theme_fivethirtyeight() +
+  theme(axis.text.x = element_text(angle = 45, size = rel(0.6), vjust = 1, hjust = 1 )) 
+```
+
+> **Data Source 2: SG TWEETER DATA**
+
+```{r}
+# We observed 7-days data usually capped below 3000 tweets per extraction.
+# sg_tweets <- search_tweets(q = "#coronavirus OR #covid19 OR #COVID OR #stayhome OR #Covid-19 OR #pandemic OR #virus OR #social-distance OR #self-quarantine OR $swab-test OR #PCR OR #infection-rate", 
+#                                         n = 3000, 
+#                                         lang = "en",
+#                                         include_rts = F,
+#                                         geocode = lookup_coords("singapore")
+                                
+sg_tweets <- read.csv("covid19_sg_tweeter_1010_1115.csv")
+```
+
+Let's explore our tweets data with regards to COVID-19 since our first extraction on 18th October to understand sentiment after recent sharp rise in number of local cases and death since end-September.
+
+We also identified 2 key events over the period to analyse further to answer our research question if the event will have significance influence on the public sentiment.
+
+**2021-10-20**
+
+* PM Lee's address on COVID-19 situation
+* Announcement on the extension of the Stabilisation Phase for four weeks, through to 21 November 2021.
+* Unvaccinated people can no longer eat at hawker centres, enter shopping malls.
+
+**2021-11-08**
+
+* Allow up to five fully vaccinated persons from the same household to dine-in together at food and beverage (F&B) establishments
+* Loose restrictions on sports and selected MICE (Meetings, Incentives, Conferences and Exhibitions) events.
+* Resuming more activities in schools, in preparation for the larger-scale safe resumption of co-curricular learning activities in the coming school year.
+* Adjusting border measures and extending Vaccinated Travel Lanes(VTL) to Malaysia, Finland and Sweden.
+
+```{r, fig.height = 8, fig.width = 10}
+# Basic EDA on amount of tweet in time (ALL)
+options(repr.plot.width=20, repr.plot.height=9)
+
+sg_tweets %>% 
+  select(created_at) %>% 
+  mutate(date = ymd(as.Date(created_at))) %>% 
+  group_by(date) %>% 
+  summarise(n = n(), .groups = "drop_last") %>%
+  ggplot(aes(x=date, y = n)) + 
+  geom_line(size = 1, color = my_colors[1]) +
+  coord_cartesian(clip = 'off') +
+  geom_vline(xintercept = as.Date('2021-10-20'), linetype="dotted", size = 1.5, color = "red") +
+  geom_vline(xintercept = as.Date('2021-11-08'), linetype="dotted", size = 1.5, color = "darkblue") +
+  my_theme + theme(axis.title.x = element_blank()) +
+  scale_x_date(date_breaks = "1 day") + 
+  ggthemes::theme_fivethirtyeight() +
+  theme(axis.text.x = element_text(angle = 45, size = rel(0.6), vjust = 1, hjust = 1 )) +
+  labs(title = "Number of COVID-19 Tweets shared between 10th Oct - 15th Nov", subtitle = "Number of tweets spiked on key events") +
+    geom_label(aes(x=as.Date('2021-10-19'), y = 380, label = "PM Lee's address on COVID-19"), color = "red", size = 4, angle = 90, fontface = "bold") +
+    geom_label(aes(x=as.Date('2021-11-07'), y = 380, label = "More Opening on COVID-19 restrictions"  ), color = "darkblue", size = 4, angle = 90, fontface = "bold") 
+  
+```
+
+```{r test, include=FALSE}
+scores <- data.frame("Label"=c("Communicator", "Data Wangler", "Programmer",
+                     "Technologist",  "Modeller", "Visualizer"),
+                     "Rich" = c(9, 7, 4, 5, 3, 7),
+                     "Andy" = c(7, 6, 6, 2, 6, 9),
+                     "Aimee" = c(6, 5, 8, 4, 7, 6))
+
+radarchart::chartJSRadar(scores, maxScale = 10, showToolTipLabel=TRUE)
+```
+
+> **Data Source 2: Tidy & Transform**
+
+```{r, message=FALSE}
+# Step 1: Tokenization ----
+sg_tweets_id <- sg_tweets %>% 
+  mutate(created_at = as.Date(sg_tweets$created_at)) %>% 
+  rowid_to_column("id")
+
+tidy_tweets_token <- sg_tweets_id %>%
+  drop_na(text) %>% 
+  select(id, created_at, status_id, text) %>% 
+  filter(text != "") %>% 
+  unnest_tokens(word, text, token = "tweets") 
+
+# Step 2: Cleaning ----
+tweets_cleaned <- tidy_tweets_token %>%
+  anti_join(tidytext::stop_words)
+
+# Manual cleaning, filtering out unwanted words
+tweets_token_cleaned <- tweets_cleaned %>%
+  filter(!word %in% c("singapore", "covid", "covid19","positive","negative","oct","nov","news","amp","reuters","news","daily","malaysia","november","october","october","press","journal","amid","weekly","days","weeks","china","chinese","report","am","pm","dont","taking","found","morning","bloomberg","months","month","india","media","week","read","reports","data","europe","monday","tuesday","wednesday","thursday","friday","satursday","sunday","wall","street") & !str_detect(word,"^#|^@") & !str_detect(word, "^[:digit:]+$"))
+
+```
+
+## Visualisation for Basic Exploratory Data Analysis
+### A Simple Word Cloud
+```{r, fig.height = 6, fig.width = 8, fig.align='center'}
+
+covid_tweets_for_wc <- tweets_token_cleaned %>% 
+  group_by(word) %>% 
+  summarise(frequency = n()) %>% 
+  arrange(desc(frequency))
+
+covid_tweets_for_wc %>% 
+  filter(frequency > 3) %>% 
+  wordcloud2(backgroundColor = "black", 
+             color = "random-light")
+```
+
+### Word Cloud (Positive  vs Negative)
+```{r, fig.height = 6, fig.width = 6, fig.align='center'}
+# A Postive-Negative Word Cloud by using BING
+BING <- get_sentiments("bing")
+
+tweets_token_cleaned %>% 
+  inner_join(BING, by="word") %>%
+  count(word, sentiment, sort=T) %>% 
+  acast(word ~ sentiment, value.var = "n", fill=0) %>% 
+  comparison.cloud(colors=my_colors[c(5, 1)], max.words = 400, title.size = 2,
+                   scale = c(3,.5))
+```
+
+### Top 3 Most Negative Tweets in the dataset
+
+```{r}
+AFINN <- get_sentiments("afinn")
+
+## TOP 3 MOST NEGATIVE TWEET ----
+tweets_AFINN_indexed <- tweets_token_cleaned %>% 
+  inner_join(AFINN, by = "word")
+
+tweet_level_sentiment <- tweets_AFINN_indexed %>% 
+  group_by(id) %>% 
+  summarise(average_sentiment = mean(value),
+            n_of_words_indexed = n()
+  )
+
+top3_negative <- tweet_level_sentiment %>% 
+  arrange(average_sentiment) %>% 
+  head(3) 
+
+sg_tweets_id %>% 
+  filter(id %in% top3_negative$id ) %>% 
+  select(text) %>% 
+  pull()
+```
+
+### Top 3 Most Positive Tweets in the dataset
+
+```{r}
+# TOP 3 MOST POSITIVE TWEETS ----
+top3_positive <- tweet_level_sentiment %>% 
+  arrange(desc(average_sentiment)) %>% 
+  head(3)
+
+sg_tweets_id %>% 
+  filter(id %in% top3_positive$id) %>% 
+  select(text) %>% 
+  pull()
+```
+
+### Overall Emotion Analysis
+> Distribution Breakdown by Emotion Class using NRC technique
+
+```{r, fig.height = 6, fig.width = 9}
+NRC <- get_sentiments("nrc")
+
+options(repr.plot.width=15, repr.plot.height=9)
+
+tweets_token_cleaned %>% 
+  inner_join(NRC, "word") %>%
+  filter(!sentiment %in% c("positive", "negative")) %>% 
+  count(sentiment, sort=T) %>% 
+  ggplot(aes(x=reorder(sentiment, n), y=n)) +
+  geom_bar(stat="identity", aes(fill=n), show.legend=F) +
+  geom_label(aes(label=format(n, big.mark = ",")), size=5, fill="white") +
+  labs(x="Sentiment", y="Frequency", title="What is the overall mood in Tweets?") +
+  scale_fill_gradient(low = my_colors[3], high = my_colors[1], guide="none") +
+  coord_flip() + 
+  my_theme + theme(axis.text.x = element_blank())
+```
+
+> Most Fequent Words by Emotion Class
+
+```{r, fig.width=20,fig.height=15}
+#options(repr.plot.width=25, repr.plot.height=9)
+
+tweets_token_cleaned %>% 
+  inner_join(NRC, "word") %>% 
+  count(sentiment, word, sort=T) %>%
+  group_by(sentiment) %>% 
+  arrange(desc(n)) %>% 
+  slice(1:7) %>% 
+  ggplot(aes(x=reorder(word, n), y=n)) +
+  geom_col(aes(fill=sentiment), show.legend = F) +
+  facet_wrap(~sentiment, scales = "free_y", nrow = 2, ncol = 5) +
+  coord_flip() +
+  my_theme + theme(axis.text.x = element_blank()) +
+  labs(x="Word", y="Frequency", title="Sentiment split by most frequent words") +
+  scale_fill_manual(values = c(my_colors, "#BE82AF", "#9D4387", "#DEC0D7",
+                               "#40BDC8", "#80D3DB", "#BFE9ED"))
+```
+
+## Research on Influence from Singapore PM's address 
+
+> **20 Oct 2021**
+
+Here, we are interested in a research question:
+Did COVID-19 key events within our sentiment analysis period on 20 Oct occured below changed the public sentiment or gain more trust in effects with the leadership?
+
+1. PM's address the nation on COVID-19 situation in Singapore:
+* The path to a "New Normal", diverted from original zero COVID approach and to live with COVID19.
+* local cases spiked sharply over the past few weeks
+* Asked for unity and COVID resilience.
+2. Announcement  on COVID social curbs to be extended another month to 21 Nov. originally slated to be in place until 24 Oct.
+* Dining out to 2 people
+* Work from home remains the default.
+
+We are going to use **Regression Discontinuity Analysis** on the causal inference and effect.
+
+Firstly, we explore the data with 10 days before and after PM Lee's address, assuming date close to the **cut off on 20 Oct** has more relevant effects.
+
+### Data Overview
+
+> Using AFINN technique
+
+```{r, fig.height = 6, fig.width = 9}
+sentiment_daily <- tweets_AFINN_indexed %>% 
+  group_by(created_at) %>% 
+  summarise(average_sentiment = mean(value),
+            n_of_words_indexed = n()) 
+
+  # Plot
+sentiment_daily %>% 
+  filter(created_at >= as.Date('2021-10-10') & created_at <= as.Date('2021-10-30')) %>% 
+  ggplot(aes(x = created_at, y = average_sentiment) ) +
+  geom_point(size = 2, color = my_colors[1]) +
+  geom_vline(xintercept = as.Date('2021-10-20'), size = 1, linetype="dotdash", color = my_colors[6]) +
+  scale_x_date(date_breaks = "1 day") + 
+  ggtitle("Distribution of Average Sentiment \n10 days before & after PM address") +
+  ggthemes::theme_fivethirtyeight() +
+  theme(axis.text.x = element_text(angle = 45, size = rel(0.6), vjust = 1, hjust = 1 ))
+
+```
+
+> Using NRC technique for Emotion Classification
+
+```{r, message=FALSE}
+# Extract for analysis period
+ tweets_token_analysis_period <- tweets_token_cleaned %>% 
+  filter(created_at >= as.Date('2021-10-10') & created_at <= as.Date('2021-10-30')) 
+
+classified_sentiment <- tweets_token_analysis_period %>% 
+  inner_join(NRC, "word") %>% 
+  group_by(sentiment, created_at) %>% 
+  summarise(cnt = n()) 
+
+# Plot Chart
+classified_sentiment %>% 
+  filter(!sentiment %in% c("positive", "negative")) %>% 
+  ggplot(aes(x=created_at, y =cnt, color = sentiment)) +
+  geom_point() +
+  facet_wrap(~sentiment, scales = "free_y", nrow = 2, ncol = 4) +
+  geom_vline(xintercept = as.Date('2021-10-20'), size = 1,linetype="dotdash", color = my_colors[8]) +
+  scale_x_date(breaks = c(as.Date('2021-10-10'), as.Date('2021-10-20'), as.Date('2021-10-30')), date_labels = "%b %d") +
+    theme(axis.text.x = element_text(angle = 45, size = rel(0.8), vjust = 1, hjust = 1 )) +
+  labs(y="Count of Emotional Words", x="Period of Date")
+```
+
+> Using Radar Chart, another visualisation chart.
+
+```{r Radar_Chart, message=FALSE}
+# Data transformation
+char_sentiment <- classified_sentiment %>% 
+  filter(!sentiment %in% c("positive", "negative")) %>%
+  mutate (covid_address_effect = as.factor(ifelse(created_at < '2021-10-20','Before','After'))) %>%
+  group_by(sentiment, covid_address_effect) %>% 
+  summarise(char_sentiment_count = sum(cnt)) 
+
+total_char <-   classified_sentiment %>% 
+  filter(!sentiment %in% c("positive", "negative")) %>%
+  mutate (covid_address_effect = as.factor(ifelse(created_at < '2021-10-20','Before','After'))) %>%
+  group_by(covid_address_effect) %>% 
+  summarise(total = sum(cnt))
+
+# Plot Chart
+char_sentiment %>% 
+  inner_join(total_char, by="covid_address_effect") %>% 
+  mutate(percent = char_sentiment_count / total * 100 ) %>% 
+  select(-char_sentiment_count, -total) %>% 
+  spread(covid_address_effect, percent)  %>% 
+  radarchart::chartJSRadar(showToolTipLabel = T, main="Any Effects on the Emotion Class Percentage After Address? - No", maxScale=25, responsive=T,addDots = T, colMatrix = grDevices::col2rgb(my_colors[c(2,4)]),lineAlpha = 0.7, polyAlpha =0.2)
+```
+
+### Simple Linear Regression
+
+OLS Linear Regression on average sentiment over time period
+
+```{r, fig.height = 6, fig.width = 9, message=FALSE}
+merged_dataset_RDD <- SSA1 %>% 
+  inner_join(sentiment_daily, by = c("Date" = "created_at")) %>% 
+  filter(Date >= as.Date('2021-10-10') & Date <= as.Date('2021-10-30')) 
+
+# add dummy variable for pre-effect = 0, and post-effect = 1
+merged_dataset_RDD <- merged_dataset_RDD %>% 
+  mutate (covid_address_effect = as.factor(ifelse(Date < '2021-10-20','Before','After')))
+
+merged_dataset_RDD %>% 
+  lm(average_sentiment ~ covid_address_effect + I(Date - as.Date('2021-10-20')),.) %>% 
+  summary()
+
+merged_dataset_RDD %>% 
+  ggplot(aes(x = Date, y = average_sentiment)) +
+  geom_point(aes(color = covid_address_effect)) + 
+  geom_smooth(method = "lm") +
+  scale_x_date(breaks = c(as.Date('2021-10-10'), as.Date('2021-10-20'), as.Date('2021-10-30')), date_labels = "%b %d", date_minor_breaks = "1 day") +
+  ggthemes::theme_fivethirtyeight() +
+  ylab("Average Sentiment") +
+  theme(axis.title.y = element_text(), legend.position = "bottom") +
+  labs(title="OLS Simple Regression Model")
+```
+### Regression Discontinuity Analysis
+
+We perform **Regression Discontinuity Analysis** on the effects of PM address event.
+
+We expect to observe there is a high volume on Oct. 20, jump in sentiment score/count on Oct. 19 and Oct. 21
+
+```{r, message = FALSE, fig.width=20,fig.height=15}
+# RDD
+RDD <- merged_dataset_RDD %>% 
+  ggplot(aes(x = Date, y = average_sentiment, color = covid_address_effect)) +
+  geom_point() + 
+  geom_smooth(method = "lm") +
+  ggthemes::theme_fivethirtyeight() + 
+  ggtitle("Regression Discontinuity Analysis") +
+  ylab("Average Sentiment") +
+  theme(axis.title.y = element_text()) +
+  scale_x_date(breaks = c(as.Date('2021-10-10'), as.Date('2021-10-20'), as.Date('2021-10-30')), date_labels = "%b %d", date_minor_breaks = "1 day") +
+  geom_vline(xintercept = as.Date('2021-10-20'), size = 1,linetype="dotdash", color = my_colors[8])
+
+# Difference in Means Test
+RDD_box <- merged_dataset_RDD %>% 
+  ggplot(aes(x = Date, y = average_sentiment, color = covid_address_effect)) +
+  geom_boxplot(outlier.colour="black",
+               outlier.size=2, notch=FALSE) + 
+  geom_point() +
+  ggthemes::theme_fivethirtyeight() + 
+  ggtitle("Test for Significant Difference") +
+  scale_x_date(breaks = c(as.Date('2021-10-10'), as.Date('2021-10-20'), as.Date('2021-10-30')), date_labels = "%b %d", date_minor_breaks = "1 day") +
+  geom_vline(xintercept = as.Date('2021-10-20'), size = 1,linetype="dotdash", color = my_colors[8])
+
+gridExtra::grid.arrange(RDD, RDD_box, ncol=2)
+```
+
+Perform T-test to find significance in difference between 2 groups (Before and After PM address)
+
+```{r}
+# Conduct a difference of means test
+# Hypothesis: H0 : mean of pre-address_effect = mean of post-address_effect
+merged_dataset_RDD %>%
+  t.test(average_sentiment ~ covid_address_effect, .)
+```
+
+## Model
+
+For the preparation of the model, we created and ran a correlational matrix, to see how our variables of interest (within the model) are related.
+
+```{r}
+pacman::p_load(Hmisc, broom, DT)
+
+merged_dataset <- SSA1 %>% 
+  inner_join(sentiment_daily, by = c("Date" = "created_at")) %>% 
+  filter(Date >= as.Date('2021-10-10') & Date <= as.Date('2021-11-12')) %>% 
+  mutate (covid_address_effect = as.factor(ifelse(Date < '2021-10-20','Before','After')))
+
+merged_dataset$Date <- as.Date(merged_dataset$Date)
+
+merged_dataset <- merged_dataset[ , -(7:8)]
+#Getting Summary
+merged_dataset %>% 
+  select("average_sentiment", "Daily.Confirmed", "Daily.Deaths","Still.Hospitalised", "Intensive.Care.Unit..ICU.") %>% 
+  summary(.)
+
+#For the preparation of the model, we created and ran a correlational matrix, 
+#to see how our variables of interest (within the model) are related.
+
+merged_dataset %>% 
+  select(average_sentiment, Daily.Confirmed, Daily.Deaths, Still.Hospitalised,Intensive.Care.Unit..ICU.) %>%
+  as.matrix(.) %>% 
+  rcorr(.) %>% 
+  tidy(.) %>% 
+  rename(variable_1 = column1,
+         variable_2 = column2,
+         corr = estimate) %>% 
+  mutate(abs_corr = abs(corr)
+  ) %>% 
+  datatable(options = list(scrollX = T),
+  ) %>% 
+  formatRound(columns = c("corr", "p.value", "abs_corr"), 
+              digits = 3)
+#It is worth noting that Intensive.Care Unit and Still Hospitalized has the highest correlation
+
+```
+
+It is worth noting that Intensive Care Unit and Still Hospitalized has the highest correlation from the result.
+
+We will use Merged Dataset for predicting average sentiment based on daily ICU, Confirmed, Hospitalised and Daily Deaths cases. 
+We’ll randomly split the data into training set (70% for building a predictive model) and test set (30% for evaluating the model). Make sure to set seed for reproducibility.
+
+```{r}
+# Split the data into training and test set
+set.seed(1234)
+training.samples <- merged_dataset$average_sentiment %>%
+  createDataPartition(p = 0.7, list = FALSE)
+train.data  <- merged_dataset[training.samples, ]
+test.data <- merged_dataset[-training.samples, ]
+
+
+#Note that, if you have many predictor variables in your data, you can simply include all the available variables in the model using ~.:
+model <- lm(average_sentiment ~., data = train.data)
+summary(model)$coef
+summary(model)
+
+
+# Summarize the model
+summary(model)
+# Make predictions
+predictions <- model %>% predict(test.data)
+RMSE(predictions, test.data$average_sentiment)
+# (b) R-square
+R2(predictions, test.data$average_sentiment)
+```
+
+### Specify OLS model
+
+We ran two regression models. The first regressed daily cases onto average sentiment (`model1`). 
+
+$$
+\begin{eqnarray}
+\widehat{swl} = intercept + b_1Daily.Deaths + b_2Daily.Confirmed + b_3Still.Hospitalised + b_4Intensive.Care.Unit..ICU.+ \epsilon
+\end{eqnarray}
+$$
+
+Our key investigation lies in the next model, in which we regressed daily cases orientations, along with interaction terms, onto average sentiment (`model2`). 
+
+$$
+\begin{eqnarray}
+\widehat{swl} = intercept + b_1Daily.Deaths + b_2Daily.Confirmed + b_3Still.Hospitalised + b_4ICU + \\ 
+                    + b_5Daily.Deaths \times icu + b_6Daily.Confirmed \times icu + b_7Still.Hospitalised \times icu + \epsilon
+\end{eqnarray}
+$$
+```{r}
+model1 <- lm(average_sentiment~  Daily.Deaths + Daily.Confirmed +Still.Hospitalised + Intensive.Care.Unit..ICU., 
+             train.data)
+
+tidy(model1) %>% as_tibble()
+glance(model1)
+```
+
+```{r}
+model2 <- lm(average_sentiment ~ (Daily.Confirmed + Daily.Deaths +Still.Hospitalised) * Intensive.Care.Unit..ICU., 
+             train.data)
+
+tidy(model2) %>% as_tibble()
+
+glance(model2)
+
+summary(model1)
+summary(model2)
+
+
+```
+
+We tested if `model2`, with interaction terms, enhances the explanatory power of the model using `anova` function.
+
+```{r}
+anova(model1, model2)
+#The results of the analysis suggest that adding the interaction terms does significantly increases the R-squared of model2, as compared to model1.
+```
+
+The results of the analysis suggest that adding the interaction terms significantly increases the R-squared of `model2`, as compared to `model1`.
+
+### Assumption Check
+
+> Prof. Roh's Note: "Here, please check the linearity assumption, using *Global Validation of Linear Model Assumption* (`gvlma`) package. You may visualize the core infomation of assumption checks, using `ggfortify` package."
+
+```{r fig.align = "center", fig.width = 10, fig.height= 10, warning = F}
+library(gvlma)
+gvlma(model2)
+
+library(ggthemes)
+theme_set(theme_fivethirtyeight())
+
+library(ggfortify)
+autoplot(gvlma(model2))
+```
+
+### Check Multicollinearity
+
+```{r fig.align = "center", fig.width = 10, fig.height= 10}
+library(car)
+vif(model1);vif(model2)
+```
+
+### Report the Results with `kable` in `R Markdown`
+
+> Prof. Roh's Note: "Now that the assumption check is done, you might want to put the results into a prettier format of table. The default print-out of table in `R Markdown` does not look good. The `knitr` package contains a very basic command, `kable`, which will format an array or data frame more presentable for display. Thus, use the following for your report."
+
+```{r, align = "center"}
+library(knitr) # Please install the package "knitr" first.
+library(kableExtra) # You might want to use package "kableExtra" as well.
+
+kable(tidy(model2))%>%
+  kable_styling("striped", full_width = T, fixed_thead = T) %>%
+  column_spec(c(1, 5), bold = T) %>%
+  row_spec(c(2, 4, 6), bold = T, color = "white", background = "#ff6347")
+
+kable(glance(model2))%>%
+  kable_styling("striped", full_width = T, font_size = 12) %>%
+  column_spec(c(2, 4, 6), bold = T, color = "white", background = "#ff6347")
+```
+
+---
+
+The regression analysis came up with two significant interaction terms.
+
+*	First, it appears that the relationships between Daily Intensive Care Unit(ICU) cases regarding average sentiment is different depending on daily confirmed cases.
+
+* Second, it appears that the relationships between Daily Intensive Care Unit(ICU) cases regarding average sentiment is different depending on daily deaths.
+
+To see the patterns of interaction, we visualized the significant interaction effects on the next chapter.
+
+## Visualize
+
+### Part 1: Social Comparison X Gender
+
+To visualize the OLS regression analysis performed above, we stored the OLS regression model’s predictions.
+
+```{r}
+# grid <- data2 %>% 
+#   data_grid(sca, fem, ageyear = 0, educ = 0, income = 0, scb = 0) %>%
+#   add_predictions(model2)
+```
+
+We undid the centering of variable (`sca`).
+
+```{r}
+# grid <- grid %>% 
+#   mutate(sca = sca + mean(data$sca))
+```
+
+The following figure represents the two lines that represent differing genders, and how each gender differs in its relationships between social comparison orientation and life satisfaction.
+
+```{r fig.align = "center", fig.width = 6, fig.height= 6}
+# ggplot(grid, aes(x = sca, y = pred, color = factor(fem))) +
+#   geom_line(size = 2)+
+#   scale_color_discrete(breaks = c(0, 1), label=c("Male", "Female")) +
+#   labs(x="Social Comparion Orientation (Abilities)", 
+#        y="Life Satisfaction",
+#        color="Gender")+
+#   coord_cartesian(ylim=c(1.5, 3.5), xlim=c(0.7, 5.3))+
+#   theme_linedraw() +
+#   theme(legend.position = "top")
+```
+
+We also plotted the two genders separately, along with data points represented with dots, so that we could see the patterns of the relationship from a different angle.
+
+```{r fig.align = "center", fig.width = 6, fig.height= 6}
+# ggplot(data, aes(x = sca, y = swl))+
+#   geom_point(aes(color = factor(fem)), alpha = 0.3)+
+#   geom_line(data = grid, aes(y = pred, color = factor(fem)), size = 1)+
+#   labs(x="Social Comparion Orientation (Abilities)", 
+#        y="Life Satisfaction",
+#        color="Gender")+
+#   coord_cartesian(ylim=c(0.7, 5.3), xlim=c(0.7, 5.3))+
+#   facet_wrap(. ~ factor(fem),
+#              labeller=as_labeller(c("0"="Male","1"="Female")))+
+#   theme_linedraw() +
+#   theme(legend.position="none")
+```
+
+### Part 2: Comparison X Education
+
+Unlike `gender`, which is a **categorical** variable, `education` is a **continuous variable** in our model. To make it easier for interpretation, we categorized them into three levels (`mean below 1SD`, `mean`, and `mean above 1SD`). We set gender at 0.5 instead of 0, as the ratio of male and female is equal.
+
+```{r}
+# data2 %>% summarise(sd(educ))
+# 
+# grid_group3 <- data2 %>% 
+#   data_grid(sca, educ = c(-1.26, 0.00, 1.26),
+#             fem = 0.5, ageyear = 0, income = 0, scb = 0) %>% 
+#   add_predictions(model2)
+```
+
+We undid the centering of variable (`sca`).
+
+```{r}
+# grid <- grid_group3 %>% 
+#   mutate(sca = sca + mean(data$sca), educ = factor(as.double(factor(educ))))
+```
+
+The following figure represents the three lines that represent differing education levels set at `M-1SD`, `Mean`, `M+1SD`, as noted above, and how differing education levels make differences to relationships between social comparison orientation and life satisfaction.
+
+```{r fig.align = "center", fig.width = 6, fig.height= 6}
+# ggplot(grid, aes(x = sca, y = pred, color = factor(educ))) +
+#   geom_line(size = 2) +
+#   scale_color_discrete(breaks = c(1, 2, 3), 
+#                        label=c("Low in Education", 
+#                                "Mean Education", 
+#                                "High in Education")) +
+#   labs(x = "Social Comparison Orientation (Abilities)", 
+#        y = "Life Satisfaction",
+#        color = "Education") +
+#   coord_cartesian(ylim = c(2.0, 3.5), xlim = c(0.7, 5.3)) +
+#   theme_linedraw() +
+#   theme(legend.position= "top")
+```
+
+## DO THIS WAY :)
+
+> Prof. Roh's Note: "Yes, you might want to perform the analysis above, using `jtools`, `huxtable`, `ggstance`, and `interactions` packages, as you have learned in class."
+
+```{r fig.align = "center", fig.width = 10, fig.height= 12, warning = F}
+pacman::p_load(jtools, huxtable, ggstance, interactions)
+
+m1 <- lm(average_sentiment~  Daily.Deaths + Daily.Confirmed +Still.Hospitalised + Intensive.Care.Unit..ICU., 
+         train.data)
+
+
+
+m2 <- lm(average_sentiment ~ (Daily.Confirmed + Daily.Deaths +Still.Hospitalised) * Intensive.Care.Unit..ICU., 
+         train.data)
+
+export_summs(m1, m2, 
+             error_format = "(t = {statistic}, p = {p.value})",
+             align = "right",
+             model.names = c("Main Effects Only", "with Interactions"),
+             digits = 3)
+
+plot_summs(m1, m2, 
+           scale = T,
+           plot.distributions = T,
+           model.names = c("Main Effects Only", "with Interactions")) +
+  theme(legend.position = "top")
+
+sim_slopes(m2,
+           pred = Intensive.Care.Unit..ICU., 
+           modx = Daily.Deaths,
+           johnson_neyman = F)
+
+sim_slopes(m2,
+           pred = Daily.Deaths, 
+           modx = Intensive.Care.Unit..ICU.,
+           johnson_neyman = T)
+```
+
+## Interpretation of the Results
+The regression analysis came up with two significant interaction terms.
+
+First, it appears that the relationships between social comparisons orientation regarding abilities and life satisfaction is different depending on one’s gender.
+
+Second, it appears that the relationships between social comparisons orientation regarding abilities and life satisfaction is different depending on one’s education.
+
+
+From our data science project, we could find the following two findings:
+
+1.	The first case of COVID-19 found in Singapore was confirmed on 23 January 2020, and since nationwide partial lockdown or circuit breaker kicked in from 7 April 2020 to 1 June 2020, Singapore have been experiencing policies change from time to time to effectively cope with the surges. As new norm has been rooted in local lifestyle, no apparent jump or trend has been observed in public sentiment.  In fact, we further analyse the effects from the most recent key announcements, a sudden increase of number of tweets and jump in overall sentiment appears that there is a causation effect, but it did not drive any specific emotion class to form trending. Despite that social curb extension announced expected to cause negative sentiment, PM address has overwhelmed the effects on it and sentiment emerge with more trusts to the leadership. Thus, information delivering, create awareness and generate leads seems to be effective in producing positive public sentiment.
+
+2.	It appears that the relationships between Daily Intensive Care Unit(ICU) cases regarding average sentiment is different depending on daily confirmed cases. Second, it appears that the relationships between social comparisons orientation regarding average sentiment is different depending on daily death cases
+
+## Implications
+
+> Prof. Roh's Note: "This is where you provide the significance of the findings. Unlike the other sections, where your goal is to describe the results that you found (**what the data told you**). This is where you chime in and proactively discuss the meaning of the results."
+
+## Limitations and Future Directions
+
+The public sentiment reflected and analysed by tweets data especially effective among younger age group who spend most of their time in social media and carefully tweets what is in their mind. This can serve only a small sample of a whole local population. If possible, we also need to filter out news publisher tweets and focus on individual tweets. In here, We are comparing sentiment change within group based on causal inference driven by nation-wide speech and announcements. On how COVID-19 has changed the sentiment in the society, we have to identify and aware of timeline on key events happened and also view from a longer term from pre-covid and covid era, hence a relative longer time period of data will provide more insights for analysing the differences.  We are hold back by the free Twitter developer account which eligible to extract tweets up to 7 days in the past. 
+
+Local slang words or Singlish are casually and frequently used among local community and most of them could be a good gauge of emotion, E.g. even a dialect vulgar should reflect anger, thus enriching the emotion dictionary like NRC can better tune to understand the positive and negative in sentiment.
+
+Feature Importance describe which features are relevant and is another aspect we should explore to help us better understanding of solved problem and sometimes lead to model improvements for accuracy by employing feature selection.
+
+## References
+
+[1] Julia Silge & David Robinson
+**Text Mining with R** - *A TIDY APPROACH*
+O'Reilly (2017)
+
+[2] Andrea Cirillo
+**R Data Mining** - *Implement data mining techniques through practical use cases and real-world datasets*
+Packt> (2017)
+
+[3] Tony Carilli
+**R Companion to Real Econometrics**
+February 2021
+https://bookdown.org/carillitony/bailey/chp11.html
+
+[4] Ashwin Malshe(2019-06-25)
+**Data Analytics Applications**
+https://ashgreat.github.io/analyticsAppBook/collect-tweets.html
+
+[5]Hui Xiang Chua
+**Covid-19 Singapore**
+https://data.world/hxchua/covid-19-singapore
+
+[6]Singapore Public Data
+**COVID-19 case numbers**
+https://data.gov.sg/dataset/covid-19-case-numbers
+
+
+
+## Appendix
+
+Custom Stop-words for Text Pre-processing in Word Cloud data overview
+
+"singapore", "covid", "covid19","positive","negative","oct","nov","news","amp","reuters","news","daily",
+"malaysia","november","october","october","press","journal","amid","weekly","days","weeks","china",
+"chinese","report","am","pm","dont","taking","found","morning","bloomberg","months","month","india",
+"media","week","read","reports","data","europe","monday","tuesday","wednesday","thursday","friday",
+"satursday","sunday","wall","street"
+
+The objective is to clean those are less relevant and very little meaning to find sentiment, such as **punctuation**, **special character**, **prefix with number, hashtag, alias**, **links** and **custom terms above**.
+
+We removed duplicated text in tweets, sent from the same screen name multiple times. For instance, there are several news publishers have posted the same tweet on different days.
+
+
+## `sessionInfo()`
+
+```{r}
+sessionInfo()
+```
+
+## Contribution Statement
+
+> Prof. Roh's Note: "Please describe your individual contribution to the team's project (**in detail**)."

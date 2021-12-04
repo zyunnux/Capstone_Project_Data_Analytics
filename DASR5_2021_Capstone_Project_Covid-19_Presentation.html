@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="author" content="Lee Yun Xun" />
+  <meta name="dcterms.date" content="2021-12-01" />
+  <title>Capstone Project SG Covid-19 Sentiment Analysis</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="DASR5_2021_Capstone_Project_Covid-19_Presentation_files/reveal.js-3.3.0.1/css/reveal.css"/>
+
+
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    background-color: #2a211c;
+    color: #bdae9d;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #bdae9d;  padding-left: 4px; }
+div.sourceCode
+  { color: #bdae9d; background-color: #2a211c; }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ffff00; } /* Alert */
+code span.an { color: #0066ff; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { } /* Attribute */
+code span.bn { color: #44aa43; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #43a8ed; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #049b0a; } /* Char */
+code span.cn { } /* Constant */
+code span.co { color: #0066ff; font-weight: bold; font-style: italic; } /* Comment */
+code span.do { color: #0066ff; font-style: italic; } /* Documentation */
+code span.dt { text-decoration: underline; } /* DataType */
+code span.dv { color: #44aa43; } /* DecVal */
+code span.er { color: #ffff00; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #44aa43; } /* Float */
+code span.fu { color: #ff9358; font-weight: bold; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #0066ff; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #43a8ed; font-weight: bold; } /* Keyword */
+code span.op { } /* Operator */
+code span.pp { font-weight: bold; } /* Preprocessor */
+code span.sc { color: #049b0a; } /* SpecialChar */
+code span.ss { color: #049b0a; } /* SpecialString */
+code span.st { color: #049b0a; } /* String */
+code span.va { } /* Variable */
+code span.vs { color: #049b0a; } /* VerbatimString */
+code span.wa { color: #ffff00; font-weight: bold; } /* Warning */
+</style>
+
+<link rel="stylesheet" href="DASR5_2021_Capstone_Project_Covid-19_Presentation_files/reveal.js-3.3.0.1/css/theme/black.css" id="theme">
+
+<style type="text/css">
+.reveal section img {
+  background: rgba(255, 255, 255, 0.85);
+}
+</style>
+
+  <!-- some tweaks to reveal css -->
+  <style type="text/css">
+    .reveal h1 { font-size: 2.0em; }
+    .reveal h2 { font-size: 1.5em;  }
+    .reveal h3 { font-size: 1.25em;	}
+    .reveal h4 { font-size: 1em;	}
+
+    .reveal .slides>section,
+    .reveal .slides>section>section {
+      padding: 0px 0px;
+    }
+
+
+
+    .reveal table {
+      border-width: 1px;
+      border-spacing: 2px;
+      border-style: dotted;
+      border-color: gray;
+      border-collapse: collapse;
+      font-size: 0.7em;
+    }
+
+    .reveal table th {
+      border-width: 1px;
+      padding-left: 10px;
+      padding-right: 25px;
+      font-weight: bold;
+      border-style: dotted;
+      border-color: gray;
+    }
+
+    .reveal table td {
+      border-width: 1px;
+      padding-left: 10px;
+      padding-right: 25px;
+      border-style: dotted;
+      border-color: gray;
+    }
+
+
+  </style>
+
+    <style type="text/css">code{white-space: pre;}</style>
+
+    <link rel="stylesheet" href="reveal.css"/>
+
+<!-- Printing and PDF exports -->
+<script id="paper-css" type="application/dynamic-css">
+
+/* Default Print Stylesheet Template
+   by Rob Glazebrook of CSSnewbie.com
+   Last Updated: June 4, 2008
+
+   Feel free (nay, compelled) to edit, append, and
+   manipulate this file as you see fit. */
+
+
+@media print {
+
+	/* SECTION 1: Set default width, margin, float, and
+	   background. This prevents elements from extending
+	   beyond the edge of the printed page, and prevents
+	   unnecessary background images from printing */
+	html {
+		background: #fff;
+		width: auto;
+		height: auto;
+		overflow: visible;
+	}
+	body {
+		background: #fff;
+		font-size: 20pt;
+		width: auto;
+		height: auto;
+		border: 0;
+		margin: 0 5%;
+		padding: 0;
+		overflow: visible;
+		float: none !important;
+	}
+
+	/* SECTION 2: Remove any elements not needed in print.
+	   This would include navigation, ads, sidebars, etc. */
+	.nestedarrow,
+	.controls,
+	.fork-reveal,
+	.share-reveal,
+	.state-background,
+	.reveal .progress,
+	.reveal .backgrounds {
+		display: none !important;
+	}
+
+	/* SECTION 3: Set body font face, size, and color.
+	   Consider using a serif font for readability. */
+	body, p, td, li, div {
+		font-size: 20pt!important;
+		font-family: Georgia, "Times New Roman", Times, serif !important;
+		color: #000;
+	}
+
+	/* SECTION 4: Set heading font face, sizes, and color.
+	   Differentiate your headings from your body text.
+	   Perhaps use a large sans-serif for distinction. */
+	h1,h2,h3,h4,h5,h6 {
+		color: #000!important;
+		height: auto;
+		line-height: normal;
+		font-family: Georgia, "Times New Roman", Times, serif !important;
+		text-shadow: 0 0 0 #000 !important;
+		text-align: left;
+		letter-spacing: normal;
+	}
+	/* Need to reduce the size of the fonts for printing */
+	h1 { font-size: 28pt !important;  }
+	h2 { font-size: 24pt !important; }
+	h3 { font-size: 22pt !important; }
+	h4 { font-size: 22pt !important; font-variant: small-caps; }
+	h5 { font-size: 21pt !important; }
+	h6 { font-size: 20pt !important; font-style: italic; }
+
+	/* SECTION 5: Make hyperlinks more usable.
+	   Ensure links are underlined, and consider appending
+	   the URL to the end of the link for usability. */
+	a:link,
+	a:visited {
+		color: #000 !important;
+		font-weight: bold;
+		text-decoration: underline;
+	}
+	/*
+	.reveal a:link:after,
+	.reveal a:visited:after {
+		content: " (" attr(href) ") ";
+		color: #222 !important;
+		font-size: 90%;
+	}
+	*/
+
+
+	/* SECTION 6: more reveal.js specific additions by @skypanther */
+	ul, ol, div, p {
+		visibility: visible;
+		position: static;
+		width: auto;
+		height: auto;
+		display: block;
+		overflow: visible;
+		margin: 0;
+		text-align: left !important;
+	}
+	.reveal pre,
+	.reveal table {
+		margin-left: 0;
+		margin-right: 0;
+	}
+	.reveal pre code {
+		padding: 20px;
+		border: 1px solid #ddd;
+	}
+	.reveal blockquote {
+		margin: 20px 0;
+	}
+	.reveal .slides {
+		position: static !important;
+		width: auto !important;
+		height: auto !important;
+
+		left: 0 !important;
+		top: 0 !important;
+		margin-left: 0 !important;
+		margin-top: 0 !important;
+		padding: 0 !important;
+		zoom: 1 !important;
+
+		overflow: visible !important;
+		display: block !important;
+
+		text-align: left !important;
+		-webkit-perspective: none;
+		   -moz-perspective: none;
+		    -ms-perspective: none;
+		        perspective: none;
+
+		-webkit-perspective-origin: 50% 50%;
+		   -moz-perspective-origin: 50% 50%;
+		    -ms-perspective-origin: 50% 50%;
+		        perspective-origin: 50% 50%;
+	}
+	.reveal .slides section {
+		visibility: visible !important;
+		position: static !important;
+		width: auto !important;
+		height: auto !important;
+		display: block !important;
+		overflow: visible !important;
+
+		left: 0 !important;
+		top: 0 !important;
+		margin-left: 0 !important;
+		margin-top: 0 !important;
+		padding: 60px 20px !important;
+		z-index: auto !important;
+
+		opacity: 1 !important;
+
+		page-break-after: always !important;
+
+		-webkit-transform-style: flat !important;
+		   -moz-transform-style: flat !important;
+		    -ms-transform-style: flat !important;
+		        transform-style: flat !important;
+
+		-webkit-transform: none !important;
+		   -moz-transform: none !important;
+		    -ms-transform: none !important;
+		        transform: none !important;
+
+		-webkit-transition: none !important;
+		   -moz-transition: none !important;
+		    -ms-transition: none !important;
+		        transition: none !important;
+	}
+	.reveal .slides section.stack {
+		padding: 0 !important;
+	}
+	.reveal section:last-of-type {
+		page-break-after: avoid !important;
+	}
+	.reveal section .fragment {
+		opacity: 1 !important;
+		visibility: visible !important;
+
+		-webkit-transform: none !important;
+		   -moz-transform: none !important;
+		    -ms-transform: none !important;
+		        transform: none !important;
+	}
+	.reveal section img {
+		display: block;
+		margin: 15px 0px;
+		background: rgba(255,255,255,1);
+		border: 1px solid #666;
+		box-shadow: none;
+	}
+
+	.reveal section small {
+		font-size: 0.8em;
+	}
+
+}  
+</script>
+
+
+<script id="pdf-css" type="application/dynamic-css">
+    
+/**
+ * This stylesheet is used to print reveal.js
+ * presentations to PDF.
+ *
+ * https://github.com/hakimel/reveal.js#pdf-export
+ */
+
+* {
+	-webkit-print-color-adjust: exact;
+}
+
+body {
+	margin: 0 auto !important;
+	border: 0;
+	padding: 0;
+	float: none !important;
+	overflow: visible;
+}
+
+html {
+	width: 100%;
+	height: 100%;
+	overflow: visible;
+}
+
+/* Remove any elements not needed in print. */
+.nestedarrow,
+.reveal .controls,
+.reveal .progress,
+.reveal .playback,
+.reveal.overview,
+.fork-reveal,
+.share-reveal,
+.state-background {
+	display: none !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	text-shadow: 0 0 0 #000 !important;
+}
+
+.reveal pre code {
+	overflow: hidden !important;
+	font-family: Courier, 'Courier New', monospace !important;
+}
+
+ul, ol, div, p {
+	visibility: visible;
+	position: static;
+	width: auto;
+	height: auto;
+	display: block;
+	overflow: visible;
+	margin: auto;
+}
+.reveal {
+	width: auto !important;
+	height: auto !important;
+	overflow: hidden !important;
+}
+.reveal .slides {
+	position: static;
+	width: 100%;
+	height: auto;
+
+	left: auto;
+	top: auto;
+	margin: 0 !important;
+	padding: 0 !important;
+
+	overflow: visible;
+	display: block;
+
+	-webkit-perspective: none;
+	   -moz-perspective: none;
+	    -ms-perspective: none;
+	        perspective: none;
+
+	-webkit-perspective-origin: 50% 50%; /* there isn't a none/auto value but 50-50 is the default */
+	   -moz-perspective-origin: 50% 50%;
+	    -ms-perspective-origin: 50% 50%;
+	        perspective-origin: 50% 50%;
+}
+
+.reveal .slides section {
+	page-break-after: always !important;
+
+	visibility: visible !important;
+	position: relative !important;
+	display: block !important;
+	position: relative !important;
+
+	margin: 0 !important;
+	padding: 0 !important;
+	box-sizing: border-box !important;
+	min-height: 1px;
+
+	opacity: 1 !important;
+
+	-webkit-transform-style: flat !important;
+	   -moz-transform-style: flat !important;
+	    -ms-transform-style: flat !important;
+	        transform-style: flat !important;
+
+	-webkit-transform: none !important;
+	   -moz-transform: none !important;
+	    -ms-transform: none !important;
+	        transform: none !important;
+}
+
+.reveal section.stack {
+	margin: 0 !important;
+	padding: 0 !important;
+	page-break-after: avoid !important;
+	height: auto !important;
+	min-height: auto !important;
+}
+
+.reveal img {
+	box-shadow: none;
+}
+
+.reveal .roll {
+	overflow: visible;
+	line-height: 1em;
+}
+
+/* Slide backgrounds are placed inside of their slide when exporting to PDF */
+.reveal section .slide-background {
+	display: block !important;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	z-index: -1;
+}
+
+/* All elements should be above the slide-background */
+.reveal section>* {
+	position: relative;
+	z-index: 1;
+}
+
+/* Display slide speaker notes when 'showNotes' is enabled */
+.reveal .speaker-notes-pdf {
+	display: block;
+	width: 100%;
+	max-height: none;
+	left: auto;
+	top: auto;
+	z-index: 100;
+}
+
+/* Display slide numbers when 'slideNumber' is enabled */
+.reveal .slide-number-pdf {
+	display: block;
+	position: absolute;
+	font-size: 14px;
+}
+
+</script>
+
+
+<script>
+var style = document.createElement( 'style' );
+style.type = 'text/css';
+var style_script_id = window.location.search.match( /print-pdf/gi ) ? 'pdf-css' : 'paper-css';
+var style_script = document.getElementById(style_script_id).text;
+style.innerHTML = style_script;
+document.getElementsByTagName('head')[0].appendChild(style);
+</script>
+
+    <script src="DASR5_2021_Capstone_Project_Covid-19_Presentation_files/header-attrs-2.10/header-attrs.js"></script>
+    <link href="DASR5_2021_Capstone_Project_Covid-19_Presentation_files/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+    <link href="DASR5_2021_Capstone_Project_Covid-19_Presentation_files/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+    <script src="DASR5_2021_Capstone_Project_Covid-19_Presentation_files/kePrint-0.0.1/kePrint.js"></script>
+    <link href="DASR5_2021_Capstone_Project_Covid-19_Presentation_files/lightable-0.0.1/lightable.css" rel="stylesheet" />
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+<section>
+    <h1 class="title">Capstone Project SG Covid-19 Sentiment Analysis</h1>
+    <h2 class="author">Lee Yun Xun</h2>
+    <h3 class="date">December 1, 2021</h3>
+</section>
+
+<section class="slide level2">
+
+<p>SG Covid-19 Sentiment Analysis <br> Capstone Project | <a href="">Presentation Slides using <code>R Markdown</code></a></p>
+<style type="text/css">
+h1 { color: rgb(62, 6, 148); }
+h2 { color: rgb(0, 104, 139); } 
+h3 { color: rgb(51, 122, 183); }
+
+body {font-family:  -apple-system, BlinkMacSystemFont, 
+                    "Segoe UI", Roboto, Ubuntu;
+      font-size: 12pt; }
+
+code { color: rgb(205,79,57) }
+
+.tocify-extend-page {height: 0 !important; }
+</style>
+</section>
+<section>
+<section id="introduction" class="title-slide slide level1">
+<h1>Introduction</h1>
+
+</section>
+<section id="section" class="slide level2">
+<h2></h2>
+<p>Coronavirus disease(<a href="">COVID19</a>) is an infectious disease caused by a newly discovered coronavirus. It has spread to numerous countries across all continents since it was first discovery in Wuhan, China back in Nov 2019 and was declared as pandemic by WHO on <a href="">March 11 2020</a>.</p>
+</section>
+<section id="section-1" class="slide level2">
+<h2></h2>
+<ul>
+<li><p>Various countries has came out measure/restrictions to respond to COVID-19. Since “circuit breaker”, a partial nationwide lockdown, where only essential services were allowed to open.</p></li>
+<li><p>Singapore(SG) residents have started to feel a great impact on daily life where they are encouraged to stay home as much as possible and wearing of mask became mandatory when going out.</p></li>
+<li><p>SG government has constantly revising policies and social restrictions. Three phases of planned reopening were announced since 19 May namely “Safe Reopening” (Phase1) “Safer Transition” (<a href=""><strong>Phase2</strong></a>), and finally “Safe Nation” (Phase3).</p></li>
+</ul>
+</section>
+<section id="section-2" class="slide level2">
+<h2></h2>
+<aside class="notes">
+Here’s an additional tip. This is how you can even add your notes for presentation. Isn’t this cool?
+</aside>
+<ul>
+<li>For the next 45 minutes, your work is to <a href=""><em>copy and paste</em></a> what you already have on your <code>R Markdown</code> and create <a href="">presentation slides</a>.</li>
+</ul>
+</section></section>
+<section>
+<section id="problem-statement" class="title-slide slide level1">
+<h1>Problem Statement</h1>
+
+</section>
+<section id="section-3" class="slide level2">
+<h2></h2>
+<ul>
+<li>Microblogging has become one of the most useful tools for sharing everyday life events and news and for expressing opinions about these events. As Twitter posts are short and constantly being generated, they are a great source for providing public sentiment towards events that occurred throughout the COVID-19 period in Singapore.</li>
+</ul>
+</section>
+<section id="section-4" class="slide level2">
+<h2></h2>
+<ul>
+<li>In our Capstone Project, we perform exploratory data analysis about SG COVID situation and sentiment analysis and modeling on the tweets about COVID19 to seek to answer the following research questions:</li>
+</ul>
+<ol type="1">
+<li><p>What are the main prevalent sentiment and emotions expressed in words in Singapore tweets about current COVID situation?</p></li>
+<li><p>Is there any change of sentiment over a period of time amidst global reopening with higher vaccination rate, in contrast to growing new daily cases/death locally?</p></li>
+</ol>
+</section>
+<section id="section-5" class="slide level2">
+<h2></h2>
+<p>For our data science project, we activated the following packages, using the <code>Tidyverse</code> approach.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load necessary packages</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(tidyverse, broom, modelr, lubridate, </span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>               tidytext, wordcloud2, wordcloud, reshape2,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>               textdata, huxtable,  <span class="co"># Employing Lexicon</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>               gridExtra, psych, sandwich, </span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>               scales, rtweet, glue, ggplot2, </span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>               cariet, DT, dplyr)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>my_colors <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;#05A4C0&quot;</span>, <span class="st">&quot;#85CEDA&quot;</span>, <span class="st">&quot;#D2A7D8&quot;</span>, <span class="st">&quot;#A67BC5&quot;</span>, <span class="st">&quot;#BB1C8B&quot;</span>, <span class="st">&quot;#8D266E&quot;</span>, <span class="st">&quot;gold4&quot;</span>, <span class="st">&quot;darkred&quot;</span>, <span class="st">&quot;deepskyblue4&quot;</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>my_theme <span class="ot">&lt;-</span> <span class="fu">theme</span>(<span class="at">plot.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">&quot;grey98&quot;</span>, <span class="at">color =</span> <span class="st">&quot;grey20&quot;</span>),</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>                  <span class="at">panel.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">&quot;grey98&quot;</span>),</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>                  <span class="at">panel.grid.major =</span> <span class="fu">element_line</span>(<span class="at">colour =</span> <span class="st">&quot;grey87&quot;</span>),</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>                  <span class="at">text =</span> <span class="fu">element_text</span>(<span class="at">color =</span> <span class="st">&quot;grey20&quot;</span>),</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>                  <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">22</span>),</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>                  <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">17</span>),</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>                  <span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">15</span>),</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>                  <span class="at">axis.text =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">15</span>),</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>                  <span class="at">legend.box.background =</span> <span class="fu">element_rect</span>(<span class="at">color =</span> <span class="st">&quot;grey20&quot;</span>, <span class="at">fill =</span> <span class="st">&quot;grey98&quot;</span>, <span class="at">size =</span> <span class="fl">0.1</span>),</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>                  <span class="at">legend.box.margin =</span> <span class="fu">margin</span>(<span class="at">t =</span> <span class="dv">3</span>, <span class="at">r =</span> <span class="dv">3</span>, <span class="at">b =</span> <span class="dv">3</span>, <span class="at">l =</span> <span class="dv">3</span>),</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>                  <span class="at">legend.title =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>                  <span class="at">legend.text =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">15</span>),</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>                  <span class="at">strip.text =</span> <span class="fu">element_text</span>(<span class="at">size=</span><span class="dv">17</span>))</span></code></pre></div>
+</section></section>
+<section>
+<section id="import" class="title-slide slide level1">
+<h1>Import</h1>
+
+</section>
+<section id="section-6" class="slide level2">
+<h2></h2>
+<p>Then, we imported our dataset.</p>
+<blockquote>
+<p><strong>Data Source 1: SG COVID DATA</strong></p>
+</blockquote>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>SSA <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">&quot;covid19.rds&quot;</span>)</span></code></pre></div>
+</section>
+<section id="section-7" class="slide level2">
+<h2></h2>
+<p>Then, we imported our dataset.</p>
+<pre><code>## Rows: 331 Columns: 20</code></pre>
+<pre><code>## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## dbl (20): SWL1, SWL2, SWL3, SWL4, SWL5, SCA1, SCA2, SCA3, SCA4, SCA5, SCA6, ...</code></pre>
+<pre><code>## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</section>
+<section id="section-8" class="slide level2">
+<h2></h2>
+<ul>
+<li><p>The dataset contains time series data on covid-19 cases in Singapore on counts of confirmed, discharged, hospitalized, deaths, imported cases.</p></li>
+<li><p>Within the dataset, Some of few key fields we are interested in reflecting current Singapore COVID-19 situation, namely Daily.Confirmed, Daily Deaths, Still.Hospitalised and Intensive.Care.Unit..ICU which will also serve as our dependent (<em>discrete x</em>) variable.</p></li>
+</ul>
+</section>
+<section id="section-9" class="slide level2">
+<h2></h2>
+<p>Notes:</p>
+<ul>
+<li><p>All figures (excluding variables with names containing “MOH report”) are as at press release within the day and are not back-dated to update any changes that the Ministry of Health (MOH) might have made.</p></li>
+<li><p>“Daily imported” and “Daily Local transmission” make up “Daily Confirmed”.</p></li>
+<li><p>Still Hospitalised" is computed based on “Total Confirmed” - “Cumulative Discharged” - “Discharged to Isolation” - “Cumulative Deaths” - “Tested positive demise” (summed). This might not tally with the sum of “General Wards MOH report” and “Intensive Care Unit (ICU)”, indicating dirty data.</p></li>
+<li><p>“Cumulative Vaccine Doses”, “Cumulative Individuals Vaccinated”, and “Cumulative Individuals Vaccination Completed” added from 1 Jul 2021. The data is tied to the date of the report but the count is as of the previous day. i.e. Figures indicated for 1 Jul 2021 reflect the total number of doses of COVID-19 vaccines as of Jun 30. “Cumulative Individuals Vaccinated” refers to the number of individuals who have received at least one dose of vaccine.</p></li>
+</ul>
+</section>
+<section id="section-10" class="slide level2">
+<h2></h2>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(SSA)</span></code></pre></div>
+<pre><code>## Rows: 999
+## Columns: 37
+## $ Date                                                          &lt;chr&gt; &quot;2020-01…
+## $ Daily.Confirmed                                               &lt;int&gt; 1, 2, 1,…
+## $ False.Positives.Found                                         &lt;int&gt; NA, NA, …
+## $ Cumulative.Confirmed                                          &lt;int&gt; 1, 3, 4,…
+## $ Daily.Discharged                                              &lt;int&gt; 0, 0, 0,…
+## $ Passed.but.not.due.to.COVID                                   &lt;int&gt; 0, 0, 0,…
+## $ Cumulative.Discharged                                         &lt;int&gt; 0, 0, 0,…
+## $ Discharged.to.Isolation                                       &lt;int&gt; 0, 0, 0,…
+## $ Still.Hospitalised                                            &lt;int&gt; 1, 3, 4,…
+## $ Daily.Deaths                                                  &lt;int&gt; 0, 0, 0,…
+## $ Cumulative.Deaths                                             &lt;int&gt; 0, 0, 0,…
+## $ Tested.positive.demise                                        &lt;int&gt; 0, 0, 0,…
+## $ Daily.Imported                                                &lt;int&gt; 1, 2, 1,…
+## $ Daily.Local.transmission                                      &lt;int&gt; 0, 0, 0,…
+## $ Local.cases.residing.in.dorms.MOH.report                      &lt;int&gt; NA, NA, …
+## $ Local.cases.not.residing.in.doms.MOH.report                   &lt;int&gt; NA, NA, …
+## $ Intensive.Care.Unit..ICU.                                     &lt;int&gt; 0, 0, 0,…
+## $ General.Wards.MOH.report                                      &lt;int&gt; NA, NA, …
+## $ In.Isolation.MOH.report                                       &lt;int&gt; NA, NA, …
+## $ Total.Completed.Isolation.MOH.report                          &lt;int&gt; NA, NA, …
+## $ Total.Hospital.Discharged.MOH.report                          &lt;int&gt; NA, NA, …
+## $ Requires.Oxygen.Supplementation.or.Unstable                   &lt;int&gt; NA, NA, …
+## $ Linked.community.cases                                        &lt;int&gt; NA, NA, …
+## $ Unlinked.community.cases                                      &lt;int&gt; NA, NA, …
+## $ Phase                                                         &lt;chr&gt; &quot;&quot;, &quot;&quot;, …
+## $ Cumulative.Vaccine.Doses                                      &lt;int&gt; NA, NA, …
+## $ Cumulative.Individuals.Vaccinated                             &lt;int&gt; NA, NA, …
+## $ Cumulative.Individuals.Vaccination.Completed                  &lt;int&gt; NA, NA, …
+## $ Perc.population.completed.at.least.one.dose                   &lt;chr&gt; &quot;&quot;, &quot;&quot;, …
+## $ Perc.population.completed.vaccination                         &lt;chr&gt; &quot;&quot;, &quot;&quot;, …
+## $ Sinovac.vaccine.doses                                         &lt;int&gt; NA, NA, …
+## $ Cumulative.individuals.using.Sinovac.vaccine                  &lt;int&gt; NA, NA, …
+## $ Doses.of.other.vaccines.recognised.by.WHO                     &lt;int&gt; NA, NA, …
+## $ Cumulative.individuals.using.other.vaccines.recognised.by.WHO &lt;int&gt; NA, NA, …
+## $ Number.taken.booster.shots                                    &lt;int&gt; NA, NA, …
+## $ Perc.population.taken.booster.shots                           &lt;chr&gt; &quot;&quot;, &quot;&quot;, …
+## $ X                                                             &lt;lgl&gt; NA, NA, …</code></pre>
+</section>
+<section id="section-11" class="slide level2">
+<h2></h2>
+<ul>
+<li><p>Within the dataset, there are five questions about satisfaction with life (<code>SWL</code>), which will serve as our dependent (<em>continuous y</em>) variable.</p></li>
+<li><p><a href="">Also, the dataset contains social comparisons orientation (11 items). They were asked by the following question.</a></p></li>
+<li><p><em>Most people compare themselves from time to time with others. For example, they may compare the way they feel, their opinions, their abilities, and/or their situation with those of other people. Here is nothing particularly ‘good’ or ‘bad’ about this type of comparison, and some people do it more than others.</em></p></li>
+<li><p><a href=""><em>We would like to find out how often you compare yourself with other people. To do that we would like to ask you to indicate how much you agree with each statement below.</em></a></p></li>
+</ul>
+</section>
+<section id="section-12" class="slide level2">
+<h2></h2>
+<ol type="1">
+<li>I often compare myself with others with respect to what I have accomplished in life</li>
+<li><a href="">If I want to learn more about something, I try to find out what others think about it</a></li>
+<li>I always pay a lot of attention to how I do things compared with how others do things</li>
+<li><a href="">I often compare how my loved ones (boy or girlfriend, family members, etc.) are doing with how others are doing</a></li>
+<li>I always like to know what others in a similar situation would do</li>
+<li><a href="">I am not the type of person who compares often with others</a></li>
+<li>If I want to find out how well I have done something, I compare what I have done with how others have done</li>
+<li><a href="">I often try to find out what others think who face similar problems as I face</a></li>
+<li>I often like to talk with others about mutual opinions and experiences</li>
+<li><a href="">I never consider my situation in life relative to that of other people</a></li>
+<li>I often compare how I am doing socially (e.g., social skills, popularity) with other people</li>
+</ol>
+</section>
+<section id="section-13" class="slide level2">
+<h2></h2>
+<ul>
+<li>Out of the 11 questions, six were about social comparison regarding abilities (<code>SCA</code>, which will serve as our dependent variable (<em>continuous x1</em>); whereas the other five were about social comparisons regarding opinions (<code>SCB</code>).</li>
+</ul>
+</section>
+<section id="section-14" class="slide level2">
+<h2></h2>
+<ul>
+<li>Our moderator (<em>categorial x2</em>), <code>gender</code>, is contained as follows: 1 being male; 2 being female.</li>
+</ul>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(comparisons)</span></code></pre></div>
+<pre><code>## Rows: 331
+## Columns: 20
+## $ SWL1    &lt;dbl&gt; 2, 3, 4, 3, 3, 3, 3, 2, 2, 2, 3, 3, 2, 3, 3, 4, 3, 2, 3, 2, 3,…
+## $ SWL2    &lt;dbl&gt; 2, 3, 4, 3, 3, 2, 3, 3, 2, 2, 3, 4, 2, 4, 4, 5, 3, 3, 4, 2, 3,…
+## $ SWL3    &lt;dbl&gt; 2, 4, 5, 3, 3, 3, 4, 3, 2, 2, 4, 4, 2, 3, 4, 4, 3, 3, 5, 2, 2,…
+## $ SWL4    &lt;dbl&gt; 2, 3, 5, 2, 2, 2, 3, 4, 2, 2, 4, 4, 2, 4, 4, 5, 2, 2, 4, 3, 3,…
+## $ SWL5    &lt;dbl&gt; 1, 3, 3, 2, 1, 3, 1, 2, 1, 2, 4, 2, 1, 2, 3, 3, 2, 2, 2, 1, 3,…
+## $ SCA1    &lt;dbl&gt; 3, 3, 2, 2, 2, 3, 1, 2, 2, 4, 3, 4, 4, 4, 4, 2, 4, 4, 1, 4, 2,…
+## $ SCA2    &lt;dbl&gt; 4, 3, 2, 2, 2, 3, 1, 3, 2, 4, 4, 4, 4, 4, 4, 4, 3, 4, 1, 4, 2,…
+## $ SCA3    &lt;dbl&gt; 2, 3, 4, 2, 3, 3, 1, 4, 2, 4, 3, 3, 4, 4, 3, 4, 3, 4, 1, 4, 3,…
+## $ SCA4    &lt;dbl&gt; 3, 3, 2, 2, 3, 3, 1, 3, 2, 4, 3, 4, 4, 4, 3, 3, 4, 4, 1, 4, 3,…
+## $ SCA5    &lt;dbl&gt; 2, 3, 2, 3, 3, 3, 1, 3, 2, 4, 3, 4, 4, 4, 4, 4, 3, 3, 1, 4, 3,…
+## $ SCA6    &lt;dbl&gt; 2, 3, 1, 3, 3, 3, 1, 2, 2, 4, 3, 3, 4, 3, 4, 4, 3, 4, 1, 4, 3,…
+## $ SCB7    &lt;dbl&gt; 3, 3, 2, 2, 4, 3, 1, 2, 2, 4, 3, 4, 4, 5, 4, 4, 3, 4, 3, 4, 3,…
+## $ SCB8    &lt;dbl&gt; 4, 3, 3, 2, 4, 3, 1, 2, 2, 4, 2, 4, 4, 5, 3, 5, 4, 4, 3, 4, 3,…
+## $ SCB9    &lt;dbl&gt; 3, 3, 2, 3, 4, 3, 1, 2, 4, 4, 2, 4, 4, 3, 3, 3, 3, 4, 2, 4, 3,…
+## $ SCB10   &lt;dbl&gt; 4, 3, 3, 3, 4, 3, 1, 3, 2, 4, 2, 4, 4, 3, 3, 5, 3, 4, 4, 4, 3,…
+## $ SCB11   &lt;dbl&gt; 4, 3, 4, 2, 3, 3, 1, 3, 3, 2, 3, 2, 2, 3, 2, 4, 3, 4, 4, 4, 3,…
+## $ gender  &lt;dbl&gt; 2, 2, 2, 2, 1, 2, 2, 1, 1, 2, 2, 1, 2, 2, 2, 1, 1, 1, 2, 1, 1,…
+## $ ageyear &lt;dbl&gt; 28, 38, 52, 37, 55, 26, 33, 51, 58, 24, 29, 44, 24, 28, 50, 24…
+## $ educ    &lt;dbl&gt; 4, 2, 6, 4, 1, 4, 2, 6, 4, 4, 4, 4, 4, 4, 6, 3, 4, 4, 4, 4, 6,…
+## $ income  &lt;dbl&gt; 3, 2, 7, 5, 2, 2, 2, 9, 1, 3, 4, 5, 5, 5, 9, 9, 9, 6, 3, 6, 9,…</code></pre>
+</section></section>
+<section>
+<section id="tidy-transform" class="title-slide slide level1">
+<h1>Tidy &amp; Transform</h1>
+
+</section>
+<section id="section-15" class="slide level2">
+<h2></h2>
+<ul>
+<li>The first thing we did with our loaded dataset was to created three variables (<code>SWL</code>, <code>SCA</code>, <code>SCB</code>) that contain the mean value of the items for each variable. Also, we recoded the gender variable.</li>
+</ul>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> comparisons <span class="sc">%&gt;%</span> </span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">swl=</span><span class="fu">rowMeans</span>(comparisons <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="fu">starts_with</span>(<span class="st">&quot;SWL&quot;</span>))), </span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">sca=</span><span class="fu">rowMeans</span>(comparisons <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="fu">starts_with</span>(<span class="st">&quot;SCA&quot;</span>))),</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">scb=</span><span class="fu">rowMeans</span>(comparisons <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="fu">starts_with</span>(<span class="st">&quot;SCB&quot;</span>))),</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">fem=</span><span class="fu">ifelse</span>(gender <span class="sc">==</span> <span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">1</span>)) </span></code></pre></div>
+</section></section>
+<section>
+<section id="model" class="title-slide slide level1">
+<h1>Model</h1>
+
+</section>
+<section id="section-16" class="slide level2">
+<h2></h2>
+<ul>
+<li>For the preparation of the model, we created and ran a correlational matrix, to see how our variables of interest (within the model) are related.</li>
+</ul>
+</section>
+<section id="section-17" class="slide level2">
+<h2></h2>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>data <span class="sc">%$%</span> </span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cor</span>(<span class="fu">tibble</span>(fem, ageyear, educ, income, sca, scb, swl)) <span class="sc">%&gt;%</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">round</span>(.,<span class="dv">2</span>)</span></code></pre></div>
+<pre><code>##           fem ageyear  educ income   sca   scb   swl
+## fem      1.00   -0.27 -0.05  -0.04  0.17 -0.01 -0.02
+## ageyear -0.27    1.00  0.49   0.04 -0.13 -0.11 -0.19
+## educ    -0.05    0.49  1.00   0.10 -0.07 -0.07  0.03
+## income  -0.04    0.04  0.10   1.00  0.05  0.01  0.15
+## sca      0.17   -0.13 -0.07   0.05  1.00  0.64 -0.03
+## scb     -0.01   -0.11 -0.07   0.01  0.64  1.00  0.12
+## swl     -0.02   -0.19  0.03   0.15 -0.03  0.12  1.00</code></pre>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>data <span class="sc">%&gt;%</span> </span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(fem, ageyear, educ, income, sca, scb, swl) <span class="sc">%&gt;%</span> </span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.matrix</span>(.) <span class="sc">%&gt;%</span> </span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  Hmisc<span class="sc">::</span><span class="fu">rcorr</span>(.) <span class="sc">%&gt;%</span> </span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tidy</span>(.) <span class="sc">%&gt;%</span> <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="at">n=</span><span class="dv">21</span>) <span class="co"># note that you might want to identify the number of rows</span></span></code></pre></div>
+<pre><code>## # A tibble: 21 × 5
+##    column1 column2 estimate     n     p.value
+##    &lt;chr&gt;   &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;       &lt;dbl&gt;
+##  1 ageyear fem     -0.272     331 0.000000496
+##  2 educ    fem     -0.0513    331 0.353      
+##  3 educ    ageyear  0.488     331 0          
+##  4 income  fem     -0.0430    331 0.435      
+##  5 income  ageyear  0.0417    331 0.449      
+##  6 income  educ     0.100     331 0.0682     
+##  7 sca     fem      0.170     331 0.00193    
+##  8 sca     ageyear -0.134     331 0.0149     
+##  9 sca     educ    -0.0721    331 0.191      
+## 10 sca     income   0.0452    331 0.412      
+## 11 scb     fem     -0.00788   331 0.886      
+## 12 scb     ageyear -0.112     331 0.0424     
+## 13 scb     educ    -0.0706    331 0.200      
+## 14 scb     income   0.00617   331 0.911      
+## 15 scb     sca      0.640     331 0          
+## 16 swl     fem     -0.0175    331 0.751      
+## 17 swl     ageyear -0.185     331 0.000718   
+## 18 swl     educ     0.0303    331 0.583      
+## 19 swl     income   0.153     331 0.00525    
+## 20 swl     sca     -0.0299    331 0.588      
+## 21 swl     scb      0.116     331 0.0342</code></pre>
+</section>
+<section id="section-18" class="slide level2">
+<h2></h2>
+<ul>
+<li>We performed mean-centering transformations on all the variables that will be turned into interaction terms.</li>
+</ul>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>data2 <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span> </span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(swl, fem, ageyear, educ, income, sca, scb) <span class="sc">%&gt;%</span> </span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate_at</span>(<span class="fu">vars</span>(ageyear<span class="sc">:</span>scb),</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>            <span class="fu">funs</span>(. <span class="sc">-</span> <span class="fu">mean</span>(.,<span class="at">na.rm=</span>T)))</span></code></pre></div>
+</section>
+<section id="specify-ols-model" class="slide level2">
+<h2>Specify OLS model</h2>
+</section>
+<section id="section-19" class="slide level2">
+<h2></h2>
+<ul>
+<li>We ran two regression models. The first regressed demographics and social comparisons orientations onto life satisfaction (<code>model1</code>).</li>
+</ul>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>model1 <span class="ot">&lt;-</span> <span class="fu">lm</span>(swl <span class="sc">~</span> fem <span class="sc">+</span> ageyear <span class="sc">+</span> educ <span class="sc">+</span> income <span class="sc">+</span> sca <span class="sc">+</span> scb, </span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>                           data2)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(model1) <span class="sc">%&gt;%</span> <span class="fu">as_tibble</span>()</span></code></pre></div>
+<table class="huxtable" style="border-collapse: collapse; border: 0px; margin-bottom: 2em; margin-top: 2em; ; margin-left: auto; margin-right: auto;  " id="tab:unnamed-chunk-10">
+<col><col><col><col><col><tr>
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0.4pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">term</th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">estimate</th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">std.error</th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">statistic</th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0.4pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">p.value</th></tr>
+<tr>
+<td style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0.4pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">(Intercept)</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">2.82&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">0.0607&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">46.4&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0.4pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">3.66e-145</td></tr>
+<tr>
+<td style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0.4pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">fem</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">-0.0668</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.0861&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">-0.776</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0.4pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.438&nbsp;&nbsp;&nbsp;&nbsp;</td></tr>
+<tr>
+<td style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0.4pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">ageyear</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">-0.0167</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">0.00379</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">-4.42&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0.4pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">1.33e-05&nbsp;</td></tr>
+<tr>
+<td style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0.4pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">educ</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.0913</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.037&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">2.47&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0.4pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.0141&nbsp;&nbsp;&nbsp;</td></tr>
+<tr>
+<td style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0.4pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">income</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">0.0538</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">0.0183&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">2.94&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0.4pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">0.00348&nbsp;&nbsp;</td></tr>
+<tr>
+<td style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0.4pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">sca</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">-0.206&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.0731&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">-2.81&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0.4pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.00518&nbsp;&nbsp;</td></tr>
+<tr>
+<td style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0.4pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">scb</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">0.25&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">0.0781&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">3.19&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0.4pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">0.00154&nbsp;&nbsp;</td></tr>
+</table>
+
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glance</span>(model1)</span></code></pre></div>
+<table class="huxtable" style="border-collapse: collapse; border: 0px; margin-bottom: 2em; margin-top: 2em; ; margin-left: auto; margin-right: auto;  " id="tab:unnamed-chunk-10">
+<col><col><col><col><col><col><col><col><col><col><col><col><tr>
+<th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0.4pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">r.squared</th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">adj.r.squared</th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">sigma</th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">statistic</th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">p.value</th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">df</th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">logLik</th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">AIC</th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">BIC</th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">deviance</th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">df.residual</th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0.4pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">nobs</th></tr>
+<tr>
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0.4pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">0.112</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">0.0957</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">0.73</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">6.82</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">7.92e-07</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">6</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">-362</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">740</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">770</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">173</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">324</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0.4pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">331</td></tr>
+</table>
+
+</section>
+<section id="section-20" class="slide level2">
+<h2></h2>
+<ul>
+<li>Our key investigation lies in the next model, in which we regressed demographics and social comparisons orientations, along with interaction terms, onto life satisfaction (<code>model2</code>).</li>
+</ul>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>model2 <span class="ot">&lt;-</span> <span class="fu">lm</span>(swl <span class="sc">~</span> (fem <span class="sc">+</span> ageyear <span class="sc">+</span> educ <span class="sc">+</span> income) <span class="sc">*</span>sca <span class="sc">+</span> scb, </span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>                           data2)</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(model2) <span class="sc">%&gt;%</span> <span class="fu">as_tibble</span>()</span></code></pre></div>
+<table class="huxtable" style="border-collapse: collapse; border: 0px; margin-bottom: 2em; margin-top: 2em; ; margin-left: auto; margin-right: auto;  " id="tab:unnamed-chunk-11">
+<col><col><col><col><col><tr>
+<th style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0.4pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">term</th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">estimate</th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">std.error</th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">statistic</th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0.4pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">p.value</th></tr>
+<tr>
+<td style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0.4pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">(Intercept)</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">2.85&nbsp;&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">0.0603&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">47.3&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0.4pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">1.55e-146</td></tr>
+<tr>
+<td style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0.4pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">fem</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">-0.0993&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.0851&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">-1.17&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0.4pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.244&nbsp;&nbsp;&nbsp;&nbsp;</td></tr>
+<tr>
+<td style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0.4pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">ageyear</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">-0.018&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">0.00375</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">-4.8&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0.4pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">2.44e-06&nbsp;</td></tr>
+<tr>
+<td style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0.4pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">educ</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.0872&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.0363&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">2.4&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0.4pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.017&nbsp;&nbsp;&nbsp;&nbsp;</td></tr>
+<tr>
+<td style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0.4pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">income</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">0.0512&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">0.018&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">2.84&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0.4pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">0.00475&nbsp;&nbsp;</td></tr>
+<tr>
+<td style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0.4pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">sca</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.0375&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.0983&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.382</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0.4pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.703&nbsp;&nbsp;&nbsp;&nbsp;</td></tr>
+<tr>
+<td style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0.4pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">scb</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">0.217&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">0.077&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">2.82&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0.4pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">0.00511&nbsp;&nbsp;</td></tr>
+<tr>
+<td style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0.4pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">fem:sca</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">-0.366&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.114&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">-3.21&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0.4pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.00147&nbsp;&nbsp;</td></tr>
+<tr>
+<td style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0.4pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">ageyear:sca</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">0.00513</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">0.00557</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">0.921</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0.4pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">0.358&nbsp;&nbsp;&nbsp;&nbsp;</td></tr>
+<tr>
+<td style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0pt 0.4pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">educ:sca</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">-0.0968&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.0477&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; padding: 6pt 6pt 6pt 6pt; font-weight: normal;">-2.03&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0.4pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.0434&nbsp;&nbsp;&nbsp;</td></tr>
+<tr>
+<td style="vertical-align: top; text-align: left; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0.4pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">income:sca</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">0.0372&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">0.0251&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">1.48&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0.4pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">0.14&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td></tr>
+</table>
+
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glance</span>(model2)</span></code></pre></div>
+<table class="huxtable" style="border-collapse: collapse; border: 0px; margin-bottom: 2em; margin-top: 2em; ; margin-left: auto; margin-right: auto;  " id="tab:unnamed-chunk-11">
+<col><col><col><col><col><col><col><col><col><col><col><col><tr>
+<th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0.4pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">r.squared</th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">adj.r.squared</th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">sigma</th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">statistic</th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">p.value</th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">df</th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">logLik</th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">AIC</th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">BIC</th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">deviance</th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">df.residual</th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0.4pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">nobs</th></tr>
+<tr>
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0.4pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">0.158</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">0.132</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">0.715</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">6.02</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">2.17e-08</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">10</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">-353</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">730</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">776</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">164</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">320</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0.4pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">331</td></tr>
+</table>
+
+</section>
+<section id="section-21" class="slide level2">
+<h2></h2>
+<ul>
+<li>We tested if <code>model2</code>, with interaction terms, enhances the explanatory power of the model using <code>anova</code> function.</li>
+</ul>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(model1, model2)</span></code></pre></div>
+<table class="huxtable" style="border-collapse: collapse; border: 0px; margin-bottom: 2em; margin-top: 2em; ; margin-left: auto; margin-right: auto;  " id="tab:unnamed-chunk-12">
+<col><col><col><col><col><col><tr>
+<th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0.4pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">Res.Df</th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">RSS</th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">Df</th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">Sum of Sq</th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">F</th><th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0.4pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">Pr(&gt;F)</th></tr>
+<tr>
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0.4pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">324</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">173</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;"></td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;"></td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">&nbsp;&nbsp;</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0.4pt 0pt 0pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td></tr>
+<tr>
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0.4pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">320</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">164</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">4</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">9</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">4.4</td><td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0pt 0.4pt 0.4pt 0pt;    padding: 6pt 6pt 6pt 6pt; font-weight: normal;">0.00178</td></tr>
+</table>
+
+</section>
+<section id="section-22" class="slide level2">
+<h2></h2>
+<ul>
+<li>The results of the analysis suggest that adding the interaction terms significantly increases the R-squared of <code>model2</code>, as compared to <code>model1</code>.</li>
+</ul>
+</section>
+<section id="assumption-check" class="slide level2">
+<h2>Assumption Check</h2>
+<ul>
+<li class="fragment">Prof. Roh’s Note: “Here, please check the linearity assumption, using <em>Global Validation of Linear Model Assumption</em> (<code>gvlma</code>) package.”</li>
+</ul>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gvlma)</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="fu">gvlma</span>(model2)</span></code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = swl ~ (fem + ageyear + educ + income) * sca + scb, 
+##     data = data2)
+## 
+## Coefficients:
+## (Intercept)          fem      ageyear         educ       income          sca  
+##    2.853239    -0.099341    -0.017982     0.087186     0.051227     0.037520  
+##         scb      fem:sca  ageyear:sca     educ:sca   income:sca  
+##    0.217028    -0.365823     0.005126    -0.096751     0.037190  
+## 
+## 
+## ASSESSMENT OF THE LINEAR MODEL ASSUMPTIONS
+## USING THE GLOBAL TEST ON 4 DEGREES-OF-FREEDOM:
+## Level of Significance =  0.05 
+## 
+## Call:
+##  gvlma(x = model2) 
+## 
+##                      Value p-value                Decision
+## Global Stat        4.11747  0.3903 Assumptions acceptable.
+## Skewness           0.01813  0.8929 Assumptions acceptable.
+## Kurtosis           1.54813  0.2134 Assumptions acceptable.
+## Link Function      2.01474  0.1558 Assumptions acceptable.
+## Heteroscedasticity 0.53647  0.4639 Assumptions acceptable.</code></pre>
+</section>
+<section id="report-the-results-with-knitrkable-and-kableextrakable_styling-in-r-markdown" class="slide level2">
+<h2>Report the Results with <code>knitr::kable</code> and <code>kableExtra::kable_styling</code> in <code>R Markdown</code></h2>
+<ul>
+<li class="fragment">Prof. Roh’s Note: "Now that the assumption check is done, you might want to put the results into a prettier format of table. The default print-out of table in <code>R Markdown</code> does not look good.</li>
+<li class="fragment">The <code>knitr</code> package contains a very basic command, <code>kable</code>, which will format an array or data frame more presentable for display."</li>
+</ul>
+</section>
+<section id="section-23" class="slide level2">
+<h2></h2>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr) <span class="co"># Please install the package &quot;knitr&quot; first.</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="fu">tidy</span>(model2))</span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">term</th>
+<th style="text-align: right;">estimate</th>
+<th style="text-align: right;">std.error</th>
+<th style="text-align: right;">statistic</th>
+<th style="text-align: right;">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: right;">2.8532389</td>
+<td style="text-align: right;">0.0602889</td>
+<td style="text-align: right;">47.3260685</td>
+<td style="text-align: right;">0.0000000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">fem</td>
+<td style="text-align: right;">-0.0993405</td>
+<td style="text-align: right;">0.0850630</td>
+<td style="text-align: right;">-1.1678459</td>
+<td style="text-align: right;">0.2437383</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">ageyear</td>
+<td style="text-align: right;">-0.0179818</td>
+<td style="text-align: right;">0.0037463</td>
+<td style="text-align: right;">-4.7999010</td>
+<td style="text-align: right;">0.0000024</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">educ</td>
+<td style="text-align: right;">0.0871861</td>
+<td style="text-align: right;">0.0363440</td>
+<td style="text-align: right;">2.3989108</td>
+<td style="text-align: right;">0.0170158</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">income</td>
+<td style="text-align: right;">0.0512266</td>
+<td style="text-align: right;">0.0180170</td>
+<td style="text-align: right;">2.8432324</td>
+<td style="text-align: right;">0.0047530</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">sca</td>
+<td style="text-align: right;">0.0375196</td>
+<td style="text-align: right;">0.0982741</td>
+<td style="text-align: right;">0.3817853</td>
+<td style="text-align: right;">0.7028740</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">scb</td>
+<td style="text-align: right;">0.2170284</td>
+<td style="text-align: right;">0.0769805</td>
+<td style="text-align: right;">2.8192660</td>
+<td style="text-align: right;">0.0051133</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">fem:sca</td>
+<td style="text-align: right;">-0.3658230</td>
+<td style="text-align: right;">0.1140477</td>
+<td style="text-align: right;">-3.2076331</td>
+<td style="text-align: right;">0.0014737</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">ageyear:sca</td>
+<td style="text-align: right;">0.0051264</td>
+<td style="text-align: right;">0.0055671</td>
+<td style="text-align: right;">0.9208321</td>
+<td style="text-align: right;">0.3578318</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">educ:sca</td>
+<td style="text-align: right;">-0.0967507</td>
+<td style="text-align: right;">0.0477145</td>
+<td style="text-align: right;">-2.0277013</td>
+<td style="text-align: right;">0.0434191</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">income:sca</td>
+<td style="text-align: right;">0.0371898</td>
+<td style="text-align: right;">0.0251264</td>
+<td style="text-align: right;">1.4801076</td>
+<td style="text-align: right;">0.1398284</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="section-24" class="slide level2">
+<h2></h2>
+<ul>
+<li>Prof. Roh’s Note: “In addition, use <code>kableExtra</code> package that contains <code>kable_styling</code> function. You will find it useful on the following page.”</li>
+</ul>
+</section>
+<section id="section-25" class="slide level2">
+<h2></h2>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="fu">glance</span>(model2), <span class="st">&quot;html&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  kableExtra<span class="sc">::</span><span class="fu">kable_styling</span>(<span class="at">position=</span><span class="st">&quot;left&quot;</span>, <span class="at">full_width =</span> F, <span class="at">font_size =</span> <span class="dv">12</span>)</span></code></pre></div>
+<table class="table" style="font-size: 12px; width: auto !important; ">
+<thead>
+<tr>
+<th style="text-align:right;">
+r.squared
+</th>
+<th style="text-align:right;">
+adj.r.squared
+</th>
+<th style="text-align:right;">
+sigma
+</th>
+<th style="text-align:right;">
+statistic
+</th>
+<th style="text-align:right;">
+p.value
+</th>
+<th style="text-align:right;">
+df
+</th>
+<th style="text-align:right;">
+logLik
+</th>
+<th style="text-align:right;">
+AIC
+</th>
+<th style="text-align:right;">
+BIC
+</th>
+<th style="text-align:right;">
+deviance
+</th>
+<th style="text-align:right;">
+df.residual
+</th>
+<th style="text-align:right;">
+nobs
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+0.1584358
+</td>
+<td style="text-align:right;">
+0.1321369
+</td>
+<td style="text-align:right;">
+0.7150843
+</td>
+<td style="text-align:right;">
+6.02443
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+10
+</td>
+<td style="text-align:right;">
+-353.0728
+</td>
+<td style="text-align:right;">
+730.1455
+</td>
+<td style="text-align:right;">
+775.7709
+</td>
+<td style="text-align:right;">
+163.6306
+</td>
+<td style="text-align:right;">
+320
+</td>
+<td style="text-align:right;">
+331
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="the-regression-analysis-came-up-with-two-significant-interaction-terms." class="slide level2">
+<h2>The regression analysis came up with two significant interaction terms.</h2>
+<ul>
+<li><p><a href="">First, it appears that the relationships between social comparisons orientation regarding abilities and life satisfaction is different depending on one’s <strong>gender</strong></a>.</p></li>
+<li><p>Second, it appears that the relationships between social comparisons orientation regarding abilities and life satisfaction is different depending on one’s <strong>education</strong>.</p></li>
+<li><p><a href="">To see the patterns of interaction, we visualized the significant interaction effects on the next chapter</a>.</p></li>
+</ul>
+</section>
+<section id="visualize-part-1-social-comparison-x-gender" class="slide level2">
+<h2>Visualize Part 1 (Social Comparison x Gender)</h2>
+<ul>
+<li>To visualize the OLS regression analysis performed above, we stored the OLS regression model’s predictions.</li>
+</ul>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>grid <span class="ot">&lt;-</span> data2 <span class="sc">%&gt;%</span> </span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data_grid</span>(sca, fem, <span class="at">ageyear =</span> <span class="dv">0</span>, <span class="at">educ =</span> <span class="dv">0</span>, <span class="at">income =</span> <span class="dv">0</span>, <span class="at">scb =</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_predictions</span>(model2)</span></code></pre></div>
+</section>
+<section id="section-26" class="slide level2">
+<h2></h2>
+<p>We undid the centering of variable (<code>sca</code>).</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>grid <span class="ot">&lt;-</span> grid <span class="sc">%&gt;%</span> </span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">sca =</span> sca <span class="sc">+</span> <span class="fu">mean</span>(data<span class="sc">$</span>sca))</span></code></pre></div>
+</section>
+<section id="section-27" class="slide level2">
+<h2></h2>
+<ul>
+<li>The following figure represents the two lines that represent differing genders, and how each gender differs in its relationships between social comparison orientation and life satisfaction.</li>
+</ul>
+</section>
+<section id="section-28" class="slide level2">
+<h2></h2>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(grid, <span class="fu">aes</span>(<span class="at">x =</span> sca, <span class="at">y =</span> pred, <span class="at">color =</span> <span class="fu">factor</span>(fem))) <span class="sc">+</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">size =</span> <span class="dv">2</span>)<span class="sc">+</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_discrete</span>(<span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>), <span class="at">label=</span><span class="fu">c</span>(<span class="st">&quot;Male&quot;</span>, <span class="st">&quot;Female&quot;</span>)) <span class="sc">+</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x=</span><span class="st">&quot;Social Comparion Orientation (Abilities)&quot;</span>, </span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">y=</span><span class="st">&quot;Life Satisfaction&quot;</span>,</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">color=</span><span class="st">&quot;Gender&quot;</span>)<span class="sc">+</span></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">ylim=</span><span class="fu">c</span>(<span class="fl">1.5</span>, <span class="fl">3.5</span>), <span class="at">xlim=</span><span class="fu">c</span>(<span class="fl">0.7</span>, <span class="fl">5.3</span>))<span class="sc">+</span></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">&quot;top&quot;</span>)</span></code></pre></div>
+<p><img data-src="DASR5_2021_Capstone_Project_Covid-19_Presentation_files/figure-revealjs/unnamed-chunk-18-1.png" /><!-- --></p>
+</section>
+<section id="section-29" class="slide level2">
+<h2></h2>
+<ul>
+<li>We also plotted the two genders separately, along with data points represented with dots, so that we could see the patterns of the relationship from a different angle.</li>
+</ul>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(data, <span class="fu">aes</span>(<span class="at">x =</span> sca, <span class="at">y =</span> swl))<span class="sc">+</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">color =</span> <span class="fu">factor</span>(fem)), <span class="at">alpha =</span> <span class="fl">0.3</span>)<span class="sc">+</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> grid, <span class="fu">aes</span>(<span class="at">y =</span> pred, <span class="at">color =</span> <span class="fu">factor</span>(fem)), <span class="at">size =</span> <span class="dv">1</span>)<span class="sc">+</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x=</span><span class="st">&quot;Social Comparion Orientation (Abilities)&quot;</span>, </span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">y=</span><span class="st">&quot;Life Satisfaction&quot;</span>,</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">color=</span><span class="st">&quot;Gender&quot;</span>)<span class="sc">+</span></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">ylim=</span><span class="fu">c</span>(<span class="fl">0.7</span>, <span class="fl">5.3</span>), <span class="at">xlim=</span><span class="fu">c</span>(<span class="fl">0.7</span>, <span class="fl">5.3</span>))<span class="sc">+</span></span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(. <span class="sc">~</span> <span class="fu">factor</span>(fem),</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>             <span class="at">labeller=</span><span class="fu">as_labeller</span>(<span class="fu">c</span>(<span class="st">&quot;0&quot;</span><span class="ot">=</span><span class="st">&quot;Male&quot;</span>,<span class="st">&quot;1&quot;</span><span class="ot">=</span><span class="st">&quot;Female&quot;</span>)))<span class="sc">+</span></span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position=</span><span class="st">&quot;none&quot;</span>)</span></code></pre></div>
+<p><img data-src="DASR5_2021_Capstone_Project_Covid-19_Presentation_files/figure-revealjs/unnamed-chunk-19-1.png" /><!-- --></p>
+</section>
+<section id="visualize-part-2-social-comparison-x-education" class="slide level2">
+<h2>Visualize Part 2 (Social Comparison x Education)</h2>
+<ul>
+<li>Unlike <code>gender</code>, which is a <strong>categorical</strong> variable, <code>education</code> is a <strong>continuous variable</strong> in our model.</li>
+<li>To make it easier for interpretation, we categorized them into three levels (<code>mean below 1SD</code>, <code>mean</code>, and <code>mean above 1SD</code>).</li>
+<li>We set gender at 0.5 instead of 0, as the ratio of male and female is equal.</li>
+</ul>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>data2 <span class="sc">%&gt;%</span> <span class="fu">summarize</span>(<span class="fu">sd</span>(educ))</span></code></pre></div>
+<table class="huxtable" style="border-collapse: collapse; border: 0px; margin-bottom: 2em; margin-top: 2em; ; margin-left: auto; margin-right: auto;  " id="tab:unnamed-chunk-20">
+<col><tr>
+<th style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0.4pt 0.4pt 0.4pt;    padding: 6pt 6pt 6pt 6pt; font-weight: bold;">sd(educ)</th></tr>
+<tr>
+<td style="vertical-align: top; text-align: right; white-space: normal; border-style: solid solid solid solid; border-width: 0.4pt 0.4pt 0.4pt 0.4pt;    padding: 6pt 6pt 6pt 6pt; background-color: rgb(242, 242, 242); font-weight: normal;">1.26</td></tr>
+</table>
+
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>grid_group3 <span class="ot">&lt;-</span> data2 <span class="sc">%&gt;%</span> </span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data_grid</span>(sca, <span class="at">educ =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">1.26</span>, <span class="fl">0.00</span>, <span class="fl">1.26</span>),</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">fem =</span> <span class="fl">0.5</span>, <span class="at">ageyear =</span> <span class="dv">0</span>, <span class="at">income =</span> <span class="dv">0</span>, <span class="at">scb =</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_predictions</span>(model2)</span></code></pre></div>
+</section>
+<section id="section-30" class="slide level2">
+<h2></h2>
+<p>We undid the centering of variable (<code>sca</code>).</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>grid <span class="ot">&lt;-</span> grid_group3 <span class="sc">%&gt;%</span> </span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">sca =</span> sca <span class="sc">+</span> <span class="fu">mean</span>(data<span class="sc">$</span>sca), <span class="at">educ =</span> <span class="fu">factor</span>(<span class="fu">as.double</span>(<span class="fu">factor</span>(educ))))</span></code></pre></div>
+</section>
+<section id="section-31" class="slide level2">
+<h2></h2>
+<ul>
+<li>The following figure represents the three lines that represent differing education levels set at <code>M-1SD</code>, <code>Mean</code>, <code>M+1SD</code>, as noted above, and how differing education levels make differences to relationships between social comparison orientation and life satisfaction.</li>
+</ul>
+</section>
+<section id="section-32" class="slide level2">
+<h2></h2>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(grid, <span class="fu">aes</span>(<span class="at">x =</span> sca, <span class="at">y =</span> pred, <span class="at">color =</span> <span class="fu">factor</span>(educ))) <span class="sc">+</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_discrete</span>(<span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>), </span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>                       <span class="at">label=</span><span class="fu">c</span>(<span class="st">&quot;Low in Education&quot;</span>, </span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>                               <span class="st">&quot;Mean Education&quot;</span>, </span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>                               <span class="st">&quot;High in Education&quot;</span>)) <span class="sc">+</span></span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;Social Comparison Orientation (Abilities)&quot;</span>, </span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">&quot;Life Satisfaction&quot;</span>,</span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>       <span class="at">color =</span> <span class="st">&quot;Education&quot;</span>) <span class="sc">+</span></span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">ylim =</span> <span class="fu">c</span>(<span class="fl">2.0</span>, <span class="fl">3.5</span>), <span class="at">xlim =</span> <span class="fu">c</span>(<span class="fl">0.7</span>, <span class="fl">5.3</span>)) <span class="sc">+</span></span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position=</span> <span class="st">&quot;top&quot;</span>)</span></code></pre></div>
+<p><img data-src="DASR5_2021_Capstone_Project_Covid-19_Presentation_files/figure-revealjs/unnamed-chunk-22-1.png" /><!-- --></p>
+</section></section>
+<section>
+<section id="interpretation-of-the-results" class="title-slide slide level1">
+<h1>Interpretation of the Results</h1>
+
+</section>
+<section id="from-our-data-science-project-we-could-find-the-following-two-findings" class="slide level2">
+<h2>From our data science project, we could find the following two findings:</h2>
+</section>
+<section id="finding-1" class="slide level2">
+<h2>Finding 1</h2>
+<ul>
+<li><p>The relationships between the tendency of people to compare themselves to others’ abilities and life satisfaction differ depending on one’s gender.</p></li>
+<li><p><a href="">Specifically, there appears to be no relationship between social comparisons orientation and life satisfaction among males</a>.</p></li>
+<li><p>On the other hand, among females, the more they compare their abilities with others, there seems to be lesser life satisfaction.</p></li>
+<li><p><a href="">Thus, social comparison seems to be harmful for life satisfaction among females, whereas there seems to be no relationships between social comparisons and life satisfaction among males. (You might want to highlight that the relationships between social comparisons orientation and life satisfaction is based on observational study, leading to correlations, not causations, in <code>Limitations and Future Directions</code> section below)</a>.</p></li>
+</ul>
+</section>
+<section id="finding-2" class="slide level2">
+<h2>Finding 2</h2>
+<ul>
+<li><p>The relationships between social comparison and life satisfaction also depends on one’s education level.</p></li>
+<li><p><a href="">It appears that, among those who received average and high levels of education, the greater the social comparison tendency, the lower the life satisfaction</a>.</p></li>
+<li><p>Such a negative relationship between social comparison and life satisfaction was not found among those with relatively lower levels of education.</p></li>
+<li><p><a href="">Social comparison regarding one’s abilities can hurt one’s life satisfaction, when one receives average and above-average levels of education (again, acknowledge that the findings are correlational though, thus further investigation with a/b testing should follow)</a>.</p></li>
+</ul>
+</section></section>
+<section id="implications" class="title-slide slide level1">
+<h1>Implications</h1>
+
+</section>
+
+<section id="limitations-and-future-directions" class="title-slide slide level1">
+<h1>Limitations and Future Directions</h1>
+
+</section>
+
+<section id="appendix" class="title-slide slide level1">
+<h1>Appendix</h1>
+
+</section>
+
+<section id="acknowledgements" class="title-slide slide level1">
+<h1>Acknowledgements</h1>
+
+</section>
+
+<section id="references" class="title-slide slide level1">
+<h1>References</h1>
+
+</section>
+    </div>
+  </div>
+
+  <script src="DASR5_2021_Capstone_Project_Covid-19_Presentation_files/reveal.js-3.3.0.1/lib/js/head.min.js"></script>
+  <script src="DASR5_2021_Capstone_Project_Covid-19_Presentation_files/reveal.js-3.3.0.1/js/reveal.js"></script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        // Display the page number of the current slide
+        slideNumber: true,
+        // Push each slide change to the browser history
+        history: true,
+        // Vertical centering of slides
+        center: true,
+        // Opens links in an iframe preview overlay
+        previewLinks: true,
+        // Transition style
+        transition: 'slide', // none/fade/slide/convex/concave/zoom
+        // Transition style for full page slide backgrounds
+        backgroundTransition: 'default', // none/fade/slide/convex/concave/zoom
+
+
+
+        chalkboard: {
+          toggleNotesButton: false,
+          theme: 'whiteboard',
+        },
+
+        keyboard: {
+          67: function() { RevealChalkboard.toggleNotesCanvas() },    // toggle notes canvas when 'c' is pressed
+          66: function() { RevealChalkboard.toggleChalkboard() }, // toggle chalkboard when 'b' is pressed
+          46: function() { RevealChalkboard.clear() },    // clear chalkboard when 'DEL' is pressed
+           8: function() { RevealChalkboard.reset() },    // reset chalkboard data on current slide when 'BACKSPACE' is pressed
+          68: function() { RevealChalkboard.download() }, // downlad recorded chalkboard drawing when 'd' is pressed
+        },
+
+        // Optional reveal.js plugins
+        dependencies: [
+          { src: 'DASR5_2021_Capstone_Project_Covid-19_Presentation_files/reveal.js-3.3.0.1/plugin/notes/notes.js', async: true },
+          { src: 'DASR5_2021_Capstone_Project_Covid-19_Presentation_files/reveal.js-3.3.0.1/plugin/search/search.js', async: true },
+          { src: 'DASR5_2021_Capstone_Project_Covid-19_Presentation_files/reveal.js-3.3.0.1/plugin/zoom-js/zoom.js', async: true },
+          { src: 'DASR5_2021_Capstone_Project_Covid-19_Presentation_files/reveal.js-3.3.0.1/plugin/chalkboard/chalkboard.js', async: true },
+        ]
+      });
+    </script>
+  <!-- dynamically load mathjax for compatibility with self-contained -->
+  <script>
+    (function () {
+      var script = document.createElement("script");
+      script.type = "text/javascript";
+      script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+      document.getElementsByTagName("head")[0].appendChild(script);
+    })();
+  </script>
+
+<script>
+  (function() {
+    if (window.jQuery) {
+      Reveal.addEventListener( 'slidechanged', function(event) {  
+        window.jQuery(event.previousSlide).trigger('hidden');
+        window.jQuery(event.currentSlide).trigger('shown');
+      });
+    }
+  })();
+</script>
+
+
+  </body>
+</html>

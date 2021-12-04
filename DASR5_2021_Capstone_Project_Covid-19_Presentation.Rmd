@@ -1,0 +1,428 @@
+---
+title: Capstone Project SG Covid-19 Sentiment Analysis
+author: "Lee Yun Xun"
+date: December 1, 2021
+output: 
+  revealjs::revealjs_presentation:
+    theme: black # You might also want to try simple, black, white, league,  
+                     # sky, beige, simple, serif, blood, moon, solarized
+    highlight: espresso # e.g., pygments, tango, kate, monochrome, espresso
+    controls: true
+    center: true
+    transition: slide # You might also want to try none, fade, convex, concave, 
+                      # zoom
+    fragments: true 
+    css: reveal.css
+    self_contained: false
+    df_print: kable
+    fig_width: 6
+    fig_height: 6
+    fig_caption: true
+    rows.print: 99999
+    reveal_plugins: ["notes", "search", "zoom", "chalkboard"]
+    reveal_options:
+      slideNumber: true
+      previewLinks: true
+      chalkboard:
+        theme: whiteboard
+        toggleNotesButton: false
+---
+
+SG Covid-19 Sentiment Analysis <br>
+Capstone Project | [Presentation Slides using `R Markdown`]()
+
+```{r setup, include = F}
+knitr::opts_chunk$set(echo = T)
+options(warn=-1)
+options(scipen = 100 ) 
+```
+
+```{css, echo = F}
+h1 { color: rgb(62, 6, 148); }
+h2 { color: rgb(0, 104, 139); } 
+h3 { color: rgb(51, 122, 183); }
+
+body {font-family:  -apple-system, BlinkMacSystemFont, 
+                    "Segoe UI", Roboto, Ubuntu;
+      font-size: 12pt; }
+
+code { color: rgb(205,79,57) }
+
+.tocify-extend-page {height: 0 !important; }
+```
+
+# Introduction
+
+## 
+Coronavirus disease([COVID19]()) is an infectious disease caused by a newly discovered coronavirus.
+It has spread to numerous countries across all continents since it was first discovery in Wuhan, China back in Nov 2019 and was declared as pandemic by WHO on [March 11 2020]().
+
+##
+* Various countries has came out measure/restrictions to respond to COVID-19.
+Since "circuit breaker", a partial nationwide lockdown, where only essential services were allowed to open.
+
+* Singapore(SG) residents have started to feel a great impact on daily life
+where they are encouraged to stay home as much as possible and wearing of mask became mandatory when going out.
+
+* SG government has constantly revising policies and social restrictions.
+Three phases of planned reopening were announced since 19 May
+namely "Safe Reopening" (Phase1) "Safer Transition" ([**Phase2**]()), and finally "Safe Nation" (Phase3).
+
+##
+<aside class="notes">
+Here's an additional tip. This is how you can even add your notes for presentation. Isn't this cool?
+</aside>
+- For the next 45 minutes, your work is to [*copy and paste*]() what you already have on your `R Markdown` and create [presentation slides]().
+
+# Problem Statement
+
+##
+- Microblogging has become one of the most useful tools for sharing everyday life events and news and for expressing opinions about these events. As Twitter posts are short and constantly being generated, they are a great source for providing public sentiment towards events that occurred throughout the COVID-19 period in Singapore. 
+
+##
+- In our Capstone Project, we perform exploratory data analysis about SG COVID situation and sentiment analysis and modeling on the tweets about COVID19 to seek to answer the following research questions:
+
+1. What are the main prevalent sentiment and emotions expressed in words in Singapore tweets
+about current COVID situation?
+
+2. Is there any change of sentiment over a period of time amidst global reopening with higher vaccination rate, in contrast to growing new daily cases/death locally?
+
+##
+For our data science project, we activated the following packages, using the `Tidyverse` approach.
+
+```{r}
+# Load necessary packages
+pacman::p_load(tidyverse, broom, modelr, lubridate, 
+               tidytext, wordcloud2, wordcloud, reshape2,
+               textdata, huxtable,  # Employing Lexicon
+               gridExtra, psych, sandwich, 
+               scales, rtweet, glue, ggplot2, 
+               cariet, DT, dplyr)
+
+my_colors <- c("#05A4C0", "#85CEDA", "#D2A7D8", "#A67BC5", "#BB1C8B", "#8D266E", "gold4", "darkred", "deepskyblue4")
+
+my_theme <- theme(plot.background = element_rect(fill = "grey98", color = "grey20"),
+                  panel.background = element_rect(fill = "grey98"),
+                  panel.grid.major = element_line(colour = "grey87"),
+                  text = element_text(color = "grey20"),
+                  plot.title = element_text(size = 22),
+                  plot.subtitle = element_text(size = 17),
+                  axis.title = element_text(size = 15),
+                  axis.text = element_text(size = 15),
+                  legend.box.background = element_rect(color = "grey20", fill = "grey98", size = 0.1),
+                  legend.box.margin = margin(t = 3, r = 3, b = 3, l = 3),
+                  legend.title = element_blank(),
+                  legend.text = element_text(size = 15),
+                  strip.text = element_text(size=17))
+```
+
+# Import
+
+##
+Then, we imported our dataset.
+
+> **Data Source 1: SG COVID DATA**
+
+```{r}
+SSA <- readRDS("covid19.rds")
+```
+
+
+##
+Then, we imported our dataset.
+
+```{r, echo = F}
+comparisons <- read_csv("https://talktoroh.squarespace.com/s/social_comparions.csv")
+```
+##
+- The dataset contains time series data on covid-19 cases in Singapore on counts of confirmed, discharged, hospitalized, deaths, imported cases.
+
+- Within the dataset, Some of few key fields we are interested in reflecting current Singapore COVID-19 situation, namely Daily.Confirmed, Daily Deaths, Still.Hospitalised and Intensive.Care.Unit..ICU which will also serve as our dependent (*discrete x*) variable.
+
+##
+Notes:
+
+* All figures (excluding variables with names containing "MOH report") are as at press release within the day and are not back-dated to update any changes that the Ministry of Health (MOH) might have made. 
+
+* "Daily imported" and "Daily Local transmission" make up "Daily Confirmed".
+
+* Still Hospitalised" is computed based on "Total Confirmed" - "Cumulative Discharged" - "Discharged to Isolation" - "Cumulative Deaths" - "Tested positive demise" (summed). This might not tally with the sum of "General Wards MOH report" and "Intensive Care Unit (ICU)", indicating dirty data.
+
+* "Cumulative Vaccine Doses", "Cumulative Individuals Vaccinated", and "Cumulative Individuals Vaccination Completed" added from 1 Jul 2021. The data is tied to the date of the report but the count is as of the previous day. i.e. Figures indicated for 1 Jul 2021 reflect the total number of doses of COVID-19 vaccines as of Jun 30. "Cumulative Individuals Vaccinated" refers to the number of individuals who have received at least one dose of vaccine.
+
+##
+```{r}
+glimpse(SSA)
+```
+
+##
+- Within the dataset, there are five questions about satisfaction with life (`SWL`), which will serve as our dependent (*continuous y*) variable.
+
+- [Also, the dataset contains social comparisons orientation (11 items). They were asked by the following question.]()
+
+- *Most people compare themselves from time to time with others. For example, they may compare the way they feel, their opinions, their abilities, and/or their situation with those of other people. Here is nothing particularly ‘good’ or ‘bad’ about this type of comparison, and some people do it more than others.*
+
+- [*We would like to find out how often you compare yourself with other people. To do that we would like to ask you to indicate how much you agree with each statement below.*]()
+
+##
+1. I often compare myself with others with respect to what I have accomplished in life
+2. [If I want to learn more about something, I try to find out what others think about it]()
+3. I always pay a lot of attention to how I do things compared with how others do things
+4. [I often compare how my loved ones (boy or girlfriend, family members, etc.) are doing with how others are doing]()
+5. I always like to know what others in a similar situation would do
+6. [I am not the type of person who compares often with others]()
+7. If I want to find out how well I have done something, I compare what I have done with how others have done
+8. [I often try to find out what others think who face similar problems as I face]()
+9. I often like to talk with others about mutual opinions and experiences
+10. [I never consider my situation in life relative to that of other people]()
+11. I often compare how I am doing socially (e.g., social skills, popularity) with other people
+
+##
+- Out of the 11 questions, six were about social comparison regarding abilities (`SCA`, which will serve as our dependent variable (*continuous x1*); whereas the other five were about social comparisons regarding opinions (`SCB`).
+
+##
+- Our moderator (*categorial x2*), `gender`, is contained as follows: 1 being male; 2 being female.
+
+```{r}
+glimpse(comparisons)
+```
+
+# Tidy & Transform
+
+##
+- The first thing we did with our loaded dataset was to created three variables (`SWL`, `SCA`, `SCB`) that contain the mean value of the items for each variable. Also, we recoded the gender variable.
+
+```{r}
+data <- comparisons %>% 
+  mutate(swl=rowMeans(comparisons %>% select(starts_with("SWL"))), 
+         sca=rowMeans(comparisons %>% select(starts_with("SCA"))),
+         scb=rowMeans(comparisons %>% select(starts_with("SCB"))),
+         fem=ifelse(gender == 1,0,1)) 
+```
+
+# Model
+
+##
+- For the preparation of the model, we created and ran a correlational matrix, to see how our variables of interest (within the model) are related.
+
+##
+```{r}
+data %$% 
+  cor(tibble(fem, ageyear, educ, income, sca, scb, swl)) %>%
+  round(.,2)
+
+data %>% 
+  select(fem, ageyear, educ, income, sca, scb, swl) %>% 
+  as.matrix(.) %>% 
+  Hmisc::rcorr(.) %>% 
+  tidy(.) %>% as_tibble() %>% 
+  print(n=21) # note that you might want to identify the number of rows
+```
+
+##
+- We performed mean-centering transformations on all the variables that will be turned into interaction terms.
+
+```{r}
+data2 <- data %>% 
+  select(swl, fem, ageyear, educ, income, sca, scb) %>% 
+  mutate_at(vars(ageyear:scb),
+            funs(. - mean(.,na.rm=T)))
+```
+
+## Specify OLS model
+
+##
+- We ran two regression models. The first regressed demographics and social comparisons orientations onto life satisfaction (`model1`). 
+
+```{r}
+model1 <- lm(swl ~ fem + ageyear + educ + income + sca + scb, 
+                           data2)
+
+tidy(model1) %>% as_tibble()
+glance(model1)
+```
+
+##
+- Our key investigation lies in the next model, in which we regressed demographics and social comparisons orientations, along with interaction terms, onto life satisfaction (`model2`). 
+
+```{r}
+model2 <- lm(swl ~ (fem + ageyear + educ + income) *sca + scb, 
+                           data2)
+
+tidy(model2) %>% as_tibble()
+glance(model2)
+```
+
+##
+- We tested if `model2`, with interaction terms, enhances the explanatory power of the model using `anova` function.
+
+```{r}
+anova(model1, model2)
+```
+
+## 
+- The results of the analysis suggest that adding the interaction terms significantly increases the R-squared of `model2`, as compared to `model1`.
+
+## Assumption Check
+
+> - Prof. Roh's Note: "Here, please check the linearity assumption, using *Global Validation of Linear Model Assumption* (`gvlma`) package."
+
+```{r}
+library(gvlma)
+gvlma(model2)
+```
+
+## Report the Results with `knitr::kable` and `kableExtra::kable_styling` in `R Markdown`
+
+> - Prof. Roh's Note: "Now that the assumption check is done, you might want to put the results into a prettier format of table. The default print-out of table in `R Markdown` does not look good. 
+- The `knitr` package contains a very basic command, `kable`, which will format an array or data frame more presentable for display."
+
+##
+```{r}
+library(knitr) # Please install the package "knitr" first.
+kable(tidy(model2))
+```
+
+##
+- Prof. Roh's Note: "In addition, use `kableExtra` package that contains `kable_styling` function. You will find it useful on the following page."
+
+##
+```{r}
+kable(glance(model2), "html") %>% 
+  kableExtra::kable_styling(position="left", full_width = F, font_size = 12)
+```
+
+## The regression analysis came up with two significant interaction terms.
+
+-	[First, it appears that the relationships between social comparisons orientation regarding abilities and life satisfaction is different depending on one’s **gender**]().
+
+-	Second, it appears that the relationships between social comparisons orientation regarding abilities and life satisfaction is different depending on one’s **education**.
+
+- [To see the patterns of interaction, we visualized the significant interaction effects on the next chapter]().
+
+## Visualize Part 1 (Social Comparison x Gender)
+- To visualize the OLS regression analysis performed above, we stored the OLS regression model’s predictions.
+
+```{r}
+grid <- data2 %>% 
+  data_grid(sca, fem, ageyear = 0, educ = 0, income = 0, scb = 0) %>%
+  add_predictions(model2)
+```
+
+##
+We undid the centering of variable (`sca`).
+
+```{r}
+grid <- grid %>% 
+  mutate(sca = sca + mean(data$sca))
+```
+
+##
+- The following figure represents the two lines that represent differing genders, and how each gender differs in its relationships between social comparison orientation and life satisfaction.
+
+##
+```{r}
+ggplot(grid, aes(x = sca, y = pred, color = factor(fem))) +
+  geom_line(size = 2)+
+  scale_color_discrete(breaks = c(0, 1), label=c("Male", "Female")) +
+  labs(x="Social Comparion Orientation (Abilities)", 
+       y="Life Satisfaction",
+       color="Gender")+
+  coord_cartesian(ylim=c(1.5, 3.5), xlim=c(0.7, 5.3))+
+  theme(legend.position = "top")
+```
+
+##
+- We also plotted the two genders separately, along with data points represented with dots, so that we could see the patterns of the relationship from a different angle.
+
+```{r}
+ggplot(data, aes(x = sca, y = swl))+
+  geom_point(aes(color = factor(fem)), alpha = 0.3)+
+  geom_line(data = grid, aes(y = pred, color = factor(fem)), size = 1)+
+  labs(x="Social Comparion Orientation (Abilities)", 
+       y="Life Satisfaction",
+       color="Gender")+
+  coord_cartesian(ylim=c(0.7, 5.3), xlim=c(0.7, 5.3))+
+  facet_wrap(. ~ factor(fem),
+             labeller=as_labeller(c("0"="Male","1"="Female")))+
+  theme(legend.position="none")
+```
+
+## Visualize Part 2 (Social Comparison x Education)
+
+- Unlike `gender`, which is a **categorical** variable, `education` is a **continuous variable** in our model. 
+- To make it easier for interpretation, we categorized them into three levels (`mean below 1SD`, `mean`, and `mean above 1SD`). 
+- We set gender at 0.5 instead of 0, as the ratio of male and female is equal.
+
+```{r}
+data2 %>% summarize(sd(educ))
+
+grid_group3 <- data2 %>% 
+  data_grid(sca, educ = c(-1.26, 0.00, 1.26),
+            fem = 0.5, ageyear = 0, income = 0, scb = 0) %>% 
+  add_predictions(model2)
+```
+
+##
+We undid the centering of variable (`sca`).
+
+```{r}
+grid <- grid_group3 %>% 
+  mutate(sca = sca + mean(data$sca), educ = factor(as.double(factor(educ))))
+```
+
+##
+- The following figure represents the three lines that represent differing education levels set at `M-1SD`, `Mean`, `M+1SD`, as noted above, and how differing education levels make differences to relationships between social comparison orientation and life satisfaction.
+
+##
+```{r}
+ggplot(grid, aes(x = sca, y = pred, color = factor(educ))) +
+  geom_line(size = 2) +
+  scale_color_discrete(breaks = c(1, 2, 3), 
+                       label=c("Low in Education", 
+                               "Mean Education", 
+                               "High in Education")) +
+  labs(x = "Social Comparison Orientation (Abilities)", 
+       y = "Life Satisfaction",
+       color = "Education") +
+  coord_cartesian(ylim = c(2.0, 3.5), xlim = c(0.7, 5.3)) +
+  theme(legend.position= "top")
+```
+
+# Interpretation of the Results
+
+## From our data science project, we could find the following two findings:
+
+## Finding 1
+- The relationships between the tendency of people to compare themselves to others’ abilities and life satisfaction differ depending on one’s gender.
+
+- [Specifically, there appears to be no relationship between social comparisons orientation and life satisfaction among males](). 
+
+- On the other hand, among females, the more they compare their abilities with others, there seems to be lesser life satisfaction. 
+
+- [Thus, social comparison seems to be harmful for life satisfaction among females, whereas there seems to be no relationships between social comparisons and life satisfaction among males. (You might want to highlight that the relationships between social comparisons orientation and life satisfaction is based on observational study, leading to correlations, not causations, in `Limitations and Future Directions` section below)]().
+
+## Finding 2
+
+- The relationships between social comparison and life satisfaction also depends on one’s education level. 
+
+- [It appears that, among those who received average and high levels of education, the greater the social comparison tendency, the lower the life satisfaction](). 
+
+- Such a negative relationship between social comparison and life satisfaction was not found among those with relatively lower levels of education. 
+
+- [Social comparison regarding one’s abilities can hurt one’s life satisfaction, when one receives average and above-average levels of education (again, acknowledge that the findings are correlational though, thus further investigation with a/b testing should follow)]().
+
+# Implications
+
+
+# Limitations and Future Directions
+
+
+# Appendix
+
+
+# Acknowledgements
+
+
+# References
+
