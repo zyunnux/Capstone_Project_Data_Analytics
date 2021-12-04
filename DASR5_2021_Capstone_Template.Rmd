@@ -1,0 +1,441 @@
+---
+title: "Your Capstone Project Title"
+author: "Your Names"
+date: "Your Submission Date"
+output:
+  html_document:
+    prettydoc::html_pretty:
+      theme: architect
+    highlight: espresso
+    # css: styles.css
+    # latex_engine: xelatex
+    # mainfont: Calibri Light
+    toc: yes
+    toc_float: 
+      collapsed: false
+      smooth_scroll: false
+    number_sections: false
+---
+
+```{r setup, include = F}
+knitr::opts_chunk$set(echo = T)
+```
+
+```{css, echo = F}
+h1 { color: rgb(62, 6, 148); }
+h2 { color: rgb(0, 104, 139); } 
+h3 { color: rgb(51, 122, 183); }
+
+body {font-family:  -apple-system, BlinkMacSystemFont, 
+                    "Segoe UI", Roboto, Ubuntu;
+      font-size: 12pt; }
+
+code { color: rgb(205,79,57) }
+
+.tocify-extend-page {height: 0 !important; }
+```
+
+## Prof. Roh's Note
+
+> "Hi Team!
+
+*	This is an `R Markdown` document, that is prepared for you to use as **a template when reporting your Capstone Project**. You might have been working hard for the past few weeks in finding/scraping, wrangling, analyzing and visualizing your data of interest so as to draw meaningful insights.
+
+*	Here, I am providing a relatively minimalistic format of an `R Markdown` document that you can use when the time comes to report (**communicate**) your Capstone Project. You may simply ***plug in*** the accounts and explanations that you plan to provide with your work into this template `R Markdown` document.
+
+*	For the rest of the three weeks, your work is to *copy and paste* what you already have on your `R Script` and create a report using `R Markdown`. Most importantly, the current `R Markdown` document guides you through the table of contents (the necessary components of your reports) that you need to follow when reporting your Capstone Project.
+
+*	To show you how you can use `R Markdown` for your Capstone Project report, I’ll use one of the R scripts that you have learned: here, an **Ordinary Least Squares (OLS) Regression Analysis** (using the `Tidyverse` approach).
+
+*	What you have to do is to use the codes that follow as a template. Please plug in the necessary information so that you can effectively report what you have done for your Capstone Project.
+
+*	Most of your work for this documentation would be to copy and paste your work from your R Script to the R Markdown template. But please do read the [R Markdown chapter of R for Data Science](https://r4ds.had.co.nz/r-markdown.html), one of our textbooks. Also, having a quick look at the [video on the R Markdown website from RStudio](https://rmarkdown.rstudio.com/lesson-1.html) might help.
+
+* Please execute the following when you open the `.Rmd` file. Before anything else, you might wonder how to create an `.html` file from this `R Markdown` script. It’s easy. Find the `Knit` button above, right below the name of the current tab. When you click it, there you will find `Knit to HTML` that makes you provide `.html` output. Please try that now. While you are working on copying and pasting your work into this script, also adding explanations, you may hit the button, so that you can check your progress.
+
+>	Recall what I said in class multiple times: that the best preparation for becoming a data scientist is to publish your work online. This will be your first work that will be published in `.html` format, using `R Markdown` :)"
+
+## Problem Statement
+
+Comparing ourselves to others is human. The human nature of social comparison has even more ample opportunities with the advent of social media. Looking through our friends’ or even friends’ friends’ posts on Facebook, Instagram, and/or Twitter, we often compare our own lives or opinions to them.
+
+In our Capstone Project, we ask two questions about people’s tendency to compare themselves with others. Our questions are not confirmatory in nature; rather, they are exploratory.
+
+1.	Do social comparisons orientation regarding abilities (the tendency that people compare their abilities with others’) have something to do with one’s life satisfaction?
+
+2.	Does the relationship between the tendency of people to compare their abilities with others’ and life satisfaction differ depending on people’s demographics (gender, age, education, and income)?
+
+For our data science project, we activated the following packages, using the `Tidyverse` approach.
+
+```{r}
+# Load necessary packages
+pacman::p_load(tidyverse, broom, modelr)
+```
+
+## Import
+
+Then, we imported our dataset.
+
+```{r}
+comparisons <- read_csv("https://talktoroh.squarespace.com/s/social_comparions.csv")
+```
+
+Within the dataset, there are five questions about satisfaction with life (`SWL`), which will serve as our dependent (*continuous y*) variable.
+
+Also, the dataset contains social comparisons orientation (11 items). They were asked by the following question.
+
+* **Most people compare themselves from time to time with others. For example, they may compare the way they feel, their opinions, their abilities, and/or their situation with those of other people. Here is nothing particularly ‘good’ or ‘bad’ about this type of comparison, and some people do it more than others.**
+
+* ***We would like to find out how often you compare yourself with other people. To do that we would like to ask you to indicate how much you agree with each statement below.***
+
+1. I often compare myself with others with respect to what I have accomplished in life
+2. If I want to learn more about something, I try to find out what others think about it
+3. I always pay a lot of attention to how I do things compared with how others do things
+4. I often compare how my loved ones (boy or girlfriend, family members, etc.) are doing with how others are doing
+5. I always like to know what others in a similar situation would do
+6. I am not the type of person who compares often with others
+7. If I want to find out how well I have done something, I compare what I have done with how others have done
+8. I often try to find out what others think who face similar problems as I face
+9. I often like to talk with others about mutual opinions and experiences
+10. I never consider my situation in life relative to that of other people
+11. I often compare how I am doing socially (e.g., social skills, popularity) with other people
+
+Out of the 11 questions, six were about social comparison regarding abilities (`SCA`, which will serve as our dependent variable (*continuous x1*); whereas the other five were about social comparisons regarding opinions (`SCB`).
+
+Our moderator (*categorical x2*), `gender`, is contained as follows: 1 being male; 2 being female.
+
+```{r}
+glimpse(comparisons)
+```
+
+## Tidy & Transform
+
+The first thing we did with our loaded dataset was to created three variables (`SWL`, `SCA`, `SCB`) that contain the mean value of the items for each variable. Also, we recoded the gender variable.
+
+```{r}
+data <- comparisons %>% 
+  mutate(swl=rowMeans(comparisons %>% select(starts_with("SWL"))), 
+         sca=rowMeans(comparisons %>% select(starts_with("SCA"))),
+         scb=rowMeans(comparisons %>% select(starts_with("SCB"))),
+         fem=ifelse(gender == 1,0,1)) 
+```
+
+## Model
+
+For the preparation of the model, we created and ran a correlational matrix, to see how our variables of interest (within the model) are related.
+
+```{r}
+pacman::p_load(Hmisc, broom, DT)
+
+data %>% 
+  select(fem, ageyear, educ, income, sca, scb, swl) %>% 
+  as.matrix(.) %>% 
+  rcorr(.) %>% 
+  tidy(.) %>% 
+  rename(variable_1 = column1,
+         variable_2 = column2,
+         corr = estimate) %>% 
+  mutate(abs_corr = abs(corr)
+         ) %>% 
+  datatable(options = list(scrollX = T),
+                ) %>% 
+  formatRound(columns = c("corr", "p.value", "abs_corr"), 
+              digits = 3)
+```
+
+We performed mean-centering transformations on all the variables that will be turned into interaction terms.
+
+```{r}
+data2 <- data %>% 
+  select(swl, fem, ageyear, educ, income, sca, scb) %>% 
+  mutate_at(vars(ageyear:scb),
+            ~(. - mean(.,na.rm=T)))
+```
+
+### Specify OLS model
+
+We ran two regression models. The first regressed demographics and social comparisons orientations onto life satisfaction (`model1`). 
+
+$$
+\begin{eqnarray}
+\widehat{swl} = intercept + b_1fem + b_2ageyear + b_3educ + b_4income + b_5sca + b_6scb + \epsilon
+\end{eqnarray}
+$$
+
+Our key investigation lies in the next model, in which we regressed demographics and social comparisons orientations, along with interaction terms, onto life satisfaction (`model2`). 
+
+$$
+\begin{eqnarray}
+\widehat{swl} = intercept + b_1fem + b_2ageyear + b_3educ + b_4income + b_5sca + b_6scb + \\ 
+                    + b_7fem \times sca + b_8ageyear \times sca + b_9educ \times sca + b_10educ \times sca + \epsilon
+\end{eqnarray}
+$$
+```{r}
+model1 <- lm(swl ~ fem + ageyear + educ + income + sca + scb, 
+                           data2)
+
+tidy(model1) %>% as_tibble()
+glance(model1)
+```
+
+```{r}
+model2 <- lm(swl ~ (fem + ageyear + educ + income) *sca + scb, 
+                           data2)
+
+tidy(model2) %>% as_tibble()
+glance(model2)
+```
+
+We tested if `model2`, with interaction terms, enhances the explanatory power of the model using `anova` function.
+
+```{r}
+anova(model1, model2)
+```
+
+The results of the analysis suggest that adding the interaction terms significantly increases the R-squared of `model2`, as compared to `model1`.
+
+### Assumption Check
+
+> Prof. Roh's Note: "Here, please check the linearity assumption, using *Global Validation of Linear Model Assumption* (`gvlma`) package. You may visualize the core infomation of assumption checks, using `ggfortify` package."
+
+```{r fig.align = "center", fig.width = 10, fig.height= 10, warning = F}
+library(gvlma)
+gvlma(model2)
+
+library(ggthemes)
+theme_set(theme_fivethirtyeight())
+
+library(ggfortify)
+autoplot(gvlma(model2))
+```
+
+### Check Multicollinearity
+
+```{r fig.align = "center", fig.width = 10, fig.height= 10}
+library(car)
+vif(model1);vif(model2)
+```
+
+### Report the Results with `kable` in `R Markdown`
+
+> Prof. Roh's Note: "Now that the assumption check is done, you might want to put the results into a prettier format of table. The default print-out of table in `R Markdown` does not look good. The `knitr` package contains a very basic command, `kable`, which will format an array or data frame more presentable for display. Thus, use the following for your report."
+
+```{r, align = "center"}
+library(knitr) # Please install the package "knitr" first.
+library(kableExtra) # You might want to use package "kableExtra" as well.
+
+kable(tidy(model2))%>%
+  kable_styling("striped", full_width = T, fixed_thead = T) %>%
+  column_spec(c(1, 5), bold = T) %>%
+  row_spec(c(2, 4, 6, 8, 10), bold = T, color = "white", background = "#ff6347")
+
+kable(glance(model2))%>%
+  kable_styling("striped", full_width = T, font_size = 12) %>%
+  column_spec(c(2, 4, 6, 8, 10, 12), bold = T, color = "white", background = "#ff6347")
+```
+
+---
+
+The regression analysis came up with two significant interaction terms.
+
+*	First, it appears that the relationships between social comparisons orientation regarding abilities and life satisfaction is different depending on one’s **gender**.
+
+*	Second, it appears that the relationships between social comparisons orientation regarding abilities and life satisfaction is different depending on one’s **education**.
+
+To see the patterns of interaction, we visualized the significant interaction effects on the next chapter.
+
+## Visualize
+
+### Part 1: Social Comparison X Gender
+
+To visualize the OLS regression analysis performed above, we stored the OLS regression model’s predictions.
+
+```{r}
+grid <- data2 %>% 
+  data_grid(sca, fem, ageyear = 0, educ = 0, income = 0, scb = 0) %>%
+  add_predictions(model2)
+```
+
+We undid the centering of variable (`sca`).
+
+```{r}
+grid <- grid %>% 
+  mutate(sca = sca + mean(data$sca))
+```
+
+The following figure represents the two lines that represent differing genders, and how each gender differs in its relationships between social comparison orientation and life satisfaction.
+
+```{r fig.align = "center", fig.width = 6, fig.height= 6}
+ggplot(grid, aes(x = sca, y = pred, color = factor(fem))) +
+  geom_line(size = 2)+
+  scale_color_discrete(breaks = c(0, 1), label=c("Male", "Female")) +
+  labs(x="Social Comparion Orientation (Abilities)", 
+       y="Life Satisfaction",
+       color="Gender")+
+  coord_cartesian(ylim=c(1.5, 3.5), xlim=c(0.7, 5.3))+
+  theme_linedraw() +
+  theme(legend.position = "top")
+```
+
+We also plotted the two genders separately, along with data points represented with dots, so that we could see the patterns of the relationship from a different angle.
+
+```{r fig.align = "center", fig.width = 6, fig.height= 6}
+ggplot(data, aes(x = sca, y = swl))+
+  geom_point(aes(color = factor(fem)), alpha = 0.3)+
+  geom_line(data = grid, aes(y = pred, color = factor(fem)), size = 1)+
+  labs(x="Social Comparion Orientation (Abilities)", 
+       y="Life Satisfaction",
+       color="Gender")+
+  coord_cartesian(ylim=c(0.7, 5.3), xlim=c(0.7, 5.3))+
+  facet_wrap(. ~ factor(fem),
+             labeller=as_labeller(c("0"="Male","1"="Female")))+
+  theme_linedraw() +
+  theme(legend.position="none")
+```
+
+### Part 2: Comparison X Education
+
+Unlike `gender`, which is a **categorical** variable, `education` is a **continuous variable** in our model. To make it easier for interpretation, we categorized them into three levels (`mean below 1SD`, `mean`, and `mean above 1SD`). We set gender at 0.5 instead of 0, as the ratio of male and female is equal.
+
+```{r}
+data2 %>% summarise(sd(educ))
+
+grid_group3 <- data2 %>% 
+  data_grid(sca, educ = c(-1.26, 0.00, 1.26),
+            fem = 0.5, ageyear = 0, income = 0, scb = 0) %>% 
+  add_predictions(model2)
+```
+
+We undid the centering of variable (`sca`).
+
+```{r}
+grid <- grid_group3 %>% 
+  mutate(sca = sca + mean(data$sca), educ = factor(as.double(factor(educ))))
+```
+
+The following figure represents the three lines that represent differing education levels set at `M-1SD`, `Mean`, `M+1SD`, as noted above, and how differing education levels make differences to relationships between social comparison orientation and life satisfaction.
+
+```{r fig.align = "center", fig.width = 6, fig.height= 6}
+ggplot(grid, aes(x = sca, y = pred, color = factor(educ))) +
+  geom_line(size = 2) +
+  scale_color_discrete(breaks = c(1, 2, 3), 
+                       label=c("Low in Education", 
+                               "Mean Education", 
+                               "High in Education")) +
+  labs(x = "Social Comparison Orientation (Abilities)", 
+       y = "Life Satisfaction",
+       color = "Education") +
+  coord_cartesian(ylim = c(2.0, 3.5), xlim = c(0.7, 5.3)) +
+  theme_linedraw() +
+  theme(legend.position= "top")
+```
+
+## DO THIS WAY :)
+
+> Prof. Roh's Note: "Yes, you might want to perform the analysis above, using `jtools`, `huxtable`, `ggstance`, and `interactions` packages, as you have learned in class."
+
+```{r fig.align = "center", fig.width = 10, fig.height= 12, warning = F}
+pacman::p_load(jtools, huxtable, ggstance, interactions)
+
+m1 <- lm(swl ~ fem + ageyear + educ + income + sca + scb, 
+         data = data)
+
+m2 <- lm(swl ~ (fem + ageyear + educ + income) * sca + scb, 
+         data = data) 
+
+export_summs(m1, m2, 
+             error_format = "(t = {statistic}, p = {p.value})",
+             align = "right",
+             model.names = c("Main Effects Only", "with Interactions"),
+             digits = 3)
+
+plot_summs(m1, m2, 
+           scale = T,
+           plot.distributions = T,
+           model.names = c("Main Effects Only", "with Interactions")) +
+  theme(legend.position = "top")
+
+sim_slopes(m2,
+           pred = sca, 
+           modx = fem,
+           johnson_neyman = F)
+
+sim_slopes(m2,
+           pred = fem, 
+           modx = sca,
+           johnson_neyman = T)
+
+set.seed(20210427)
+
+interact_plot(m2, 
+              pred = "sca",
+              modx = "fem", 
+              modx.labels = c("Male",
+                              "Female"),
+              interval = T, 
+              int.width = 0.95,
+              colors = c("tomato3", 
+                         "deepskyblue4"),
+              vary.lty = T,
+              line.thickness = 1,
+              legend.main = "Gender",
+              plot.points = T,
+              jitter = 0.1) +
+  geom_vline(xintercept = 3.19, col = "red", linetype = 1, size = 1) +
+  annotate("text",
+           x = 2.1,
+           y = 4.7,
+           label = paste0("The shaded areas denote the boundary\nbetween regions ",
+                          "of significance and\nnon-significance based on alpha at 5%")
+           ) +
+  annotate("rect",
+           fill = "yellow",
+           alpha = 0.1,
+           xmin = 3.19,
+           xmax = 5,
+           ymin = 1,
+           ymax = 5) + 
+  labs(title = "The Interplay of Gender and Social Comparison\non Life Satisfaction",
+       subtitle = paste0("Among the female, the more they compare their abilities ",
+                         "with others,\nthere seems to be lesser life satisfaction."),
+       caption = "Source: Your Dataset",
+       x = "Social Comparison of Abilities (1-5)",
+       y = "Life Satisfaction (1-5)") + 
+  ggthemes::theme_fivethirtyeight() + 
+  theme(legend.position = "top",
+        text = element_text(family = "Courier"),
+        axis.text.y = element_text())
+
+```
+
+## Interpretation of the Results
+
+From our data science project, we could find the following two findings:
+
+1.	The relationships between the tendency of people to compare themselves to others’ abilities and life satisfaction differ depending on one’s gender. Specifically, there appears to be no relationship between social comparisons orientation and life satisfaction among males. On the other hand, among females, the more they compare their abilities with others, there seems to be lesser life satisfaction. Thus, social comparison seems to be harmful for life satisfaction among females, whereas there seems to be no relationships between social comparisons and life satisfaction among males. (You might want to highlight that the relationships between social comparisons orientation and life satisfaction is based on observational study, leading to correlations, not causations, in `Limitations and Future Directions` section below).
+
+2.	The relationships between social comparison and life satisfaction also depends on one’s education level. It appears that, among those who received average and high levels of education, the greater the social comparison tendency, the lower the life satisfaction. Such a negative relationship between social comparison and life satisfaction was not found among those with relatively lower levels of education. Social comparison regarding one’s abilities can hurt one’s life satisfaction, when one receives average and above-average levels of education (again, acknowledge that the findings are correlational though, thus further investigation with a/b testing should follow).
+
+## Implications
+
+> Prof. Roh's Note: "This is where you provide the significance of the findings. Unlike the other sections, where your goal is to describe the results that you found (**what the data told you**). This is where you chime in and proactively discuss the meaning of the results."
+
+## Limitations and Future Directions
+
+> Prof. Roh's Note: "Acknowledging limitations is not where you just provide a laundry list of what is missing and what should have done. Please take the responsibility of your analyses and inform your readers to understand what the results tell and don’t (or can’t) tell. More importantly, this is the section where you technically begin your next data science project, by highlighting what would be informative down the line to shed further light on what you have found here."
+
+## References
+
+> References
+
+## Appendix
+
+> Appendix
+
+## Make sure to run `sessionInfo()`
+
+> Prof. Roh's Note: "Please include `sessionInfo()` in your document here. As you've learned from the course, the function lists the version of R that you’re using, along with all of the packages you have loaded for your project."
+
+## Contribution Statement
+
+> Prof. Roh's Note: "Please describe your individual contribution to the team's project (**in detail**)."
